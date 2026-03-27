@@ -415,26 +415,262 @@ document.getElementById("save-btn").addEventListener("click", () => {
 // ── Edit profile from complete state ──
 document.getElementById("edit-profile-btn").addEventListener("click", () => {
   profileComplete.style.display = "none";
+  document.getElementById("settings-panel").style.display = "none";
   profileForm.style.display = "block";
 });
+
+// ══════════════════════════════════
+//  CREDITS & PAYMENT
+// ══════════════════════════════════
+
+const creditNumEl = document.getElementById("credit-num");
+const creditsBox = document.getElementById("credits-box");
+const creditsFillEl = document.getElementById("credits-fill");
+const buySection = document.getElementById("buy-section");
+const paymentPending = document.getElementById("payment-pending");
+
+function updateCreditsUI(credits) {
+  creditNumEl.textContent = credits;
+  const pct = Math.min(100, (credits / 50) * 100);
+  creditsFillEl.style.width = pct + "%";
+
+  creditsBox.classList.remove("low", "empty");
+  if (credits === 0) {
+    creditsBox.classList.add("empty");
+  } else if (credits <= 5) {
+    creditsBox.classList.add("low");
+  }
+}
+
+async function fetchCredits() {
+  const { akUserId } = await chrome.storage.local.get("akUserId");
+  if (!akUserId) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/credits`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: akUserId }),
+    });
+    const data = await res.json();
+    if (typeof data.credits === "number") {
+      updateCreditsUI(data.credits);
+      chrome.storage.local.set({ akCredits: data.credits });
+    }
+  } catch {
+    // Use cached credits
+    const { akCredits } = await chrome.storage.local.get("akCredits");
+    if (typeof akCredits === "number") updateCreditsUI(akCredits);
+  }
+}
+
+// Buy credits
+document.getElementById("buy-pack").addEventListener("click", async () => {
+  const { akUserId } = await chrome.storage.local.get("akUserId");
+  if (!akUserId) return;
+
+  buySection.style.display = "none";
+  paymentPending.style.display = "block";
+
+  try {
+    const res = await fetch(`${API_BASE}/api/payment/create`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: akUserId }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || "Payment failed");
+    }
+
+    const data = await res.json();
+
+    // Show Lightning invoice
+    document.getElementById("ln-invoice-display").textContent = data.lnInvoice;
+
+    // Copy button
+    document.getElementById("copy-ln").addEventListener("click", () => {
+      navigator.clipboard.writeText(data.lnInvoice);
+      document.getElementById("copy-ln").textContent = "Copied!";
+      setTimeout(() => {
+        document.getElementById("copy-ln").textContent = "Copy Lightning Invoice";
+      }, 2000);
+    });
+
+    // Countdown timer (30s quote expiry)
+    let timeLeft = 30;
+    const timerEl = document.getElementById("pay-timer");
+    const countdown = setInterval(() => {
+      timeLeft--;
+      timerEl.textContent = timeLeft;
+      if (timeLeft <= 0) clearInterval(countdown);
+    }, 1000);
+
+    // Poll for payment completion
+    pollPayment(data.invoiceId, countdown);
+  } catch (err) {
+    document.querySelector(".ak-payment-msg").textContent = err.message;
+    setTimeout(() => {
+      paymentPending.style.display = "none";
+      buySection.style.display = "block";
+    }, 3000);
+  }
+});
+
+async function pollPayment(invoiceId, countdownInterval) {
+  const { akUserId } = await chrome.storage.local.get("akUserId");
+  let attempts = 0;
+
+  const poll = setInterval(async () => {
+    attempts++;
+    if (attempts > 60) {
+      // 2 minutes max
+      clearInterval(poll);
+      clearInterval(countdownInterval);
+      document.querySelector(".ak-payment-msg").textContent = "Payment timed out";
+      setTimeout(() => {
+        paymentPending.style.display = "none";
+        buySection.style.display = "block";
+      }, 2000);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_BASE}/api/credits`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: akUserId }),
+      });
+      const data = await res.json();
+
+      // Credits went up = payment confirmed
+      const { akCredits } = await chrome.storage.local.get("akCredits");
+      if (data.credits > (akCredits || 3)) {
+        clearInterval(poll);
+        clearInterval(countdownInterval);
+        updateCreditsUI(data.credits);
+        chrome.storage.local.set({ akCredits: data.credits });
+
+        document.querySelector(".ak-payment-msg").textContent = "✓ Payment confirmed!";
+        setTimeout(() => {
+          paymentPending.style.display = "none";
+          buySection.style.display = "block";
+        }, 2000);
+      }
+    } catch {
+      // ignore poll errors
+    }
+  }, 2000);
+}
+
+// ══════════════════════════════════
+//  SETTINGS
+// ══════════════════════════════════
+
+const settingsPanel = document.getElementById("settings-panel");
+const useOwnKeyCheckbox = document.getElementById("use-own-key");
+const ownKeyField = document.getElementById("own-key-field");
+
+// Settings button
+document.getElementById("settings-btn").addEventListener("click", () => {
+  profileComplete.style.display = "none";
+  profileForm.style.display = "none";
+  settingsPanel.style.display = "block";
+});
+
+// Back from settings
+document.getElementById("back-from-settings").addEventListener("click", () => {
+  settingsPanel.style.display = "none";
+  profileComplete.style.display = "block";
+});
+
+// Toggle own key field visibility
+useOwnKeyCheckbox.addEventListener("change", () => {
+  ownKeyField.style.display = useOwnKeyCheckbox.checked ? "block" : "none";
+});
+
+// Save settings
+document.getElementById("save-settings-btn").addEventListener("click", () => {
+  const settings = {
+    useOwnKey: useOwnKeyCheckbox.checked,
+    ownApiKey: document.getElementById("own-api-key").value.trim(),
+  };
+
+  chrome.storage.local.set({ akSettings: settings }, () => {
+    settingsPanel.style.display = "none";
+    profileComplete.style.display = "block";
+
+    // Update credits UI based on key mode
+    if (settings.useOwnKey && settings.ownApiKey) {
+      creditNumEl.textContent = "∞";
+      creditsFillEl.style.width = "100%";
+      creditsBox.classList.remove("low", "empty");
+      buySection.style.display = "none";
+    } else {
+      buySection.style.display = "block";
+      fetchCredits();
+    }
+  });
+});
+
+// ══════════════════════════════════
+//  USER ID
+// ══════════════════════════════════
+
+function generateUserId() {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let id = "ak_";
+  for (let i = 0; i < 16; i++) {
+    id += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return id;
+}
 
 // ══════════════════════════════════
 //  INIT: Check for saved profile
 // ══════════════════════════════════
 
-chrome.storage.local.get("akProfile", ({ akProfile }) => {
-  if (akProfile && akProfile.fullName) {
+chrome.storage.local.get(["akProfile", "akUserId", "akSettings", "akCredits"], (data) => {
+  // Ensure userId exists
+  let userId = data.akUserId;
+  if (!userId) {
+    userId = generateUserId();
+    chrome.storage.local.set({ akUserId: userId });
+  }
+  document.getElementById("user-id-display").textContent = userId;
+
+  // Load settings
+  if (data.akSettings) {
+    useOwnKeyCheckbox.checked = data.akSettings.useOwnKey || false;
+    document.getElementById("own-api-key").value = data.akSettings.ownApiKey || "";
+    ownKeyField.style.display = data.akSettings.useOwnKey ? "block" : "none";
+  }
+
+  if (data.akProfile && data.akProfile.fullName) {
     // Has saved profile → show complete state
-    loadProfile(akProfile);
+    loadProfile(data.akProfile);
     stepUpload.style.display = "none";
     stepReview.style.display = "block";
     profileForm.style.display = "none";
     profileComplete.style.display = "block";
 
-    const filled = TRACKED_FIELDS.filter((k) => akProfile[k] && akProfile[k].length > 0).length;
+    const filled = TRACKED_FIELDS.filter((k) => data.akProfile[k] && data.akProfile[k].length > 0).length;
     document.getElementById("done-sub").textContent = `${filled + 2} fields filled — ready to autofill`;
 
     updateCompleteness();
+
+    // Load credits
+    if (data.akSettings?.useOwnKey && data.akSettings?.ownApiKey) {
+      creditNumEl.textContent = "∞";
+      creditsFillEl.style.width = "100%";
+      buySection.style.display = "none";
+    } else {
+      if (typeof data.akCredits === "number") {
+        updateCreditsUI(data.akCredits);
+      }
+      fetchCredits();
+    }
   }
   // Otherwise: show step 1 (upload)
 });

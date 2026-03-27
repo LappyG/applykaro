@@ -60,7 +60,81 @@
         <div class="ak-done-icon">✓</div>
         <div class="ak-done-title">Profile Complete</div>
         <div class="ak-done-sub" id="done-sub">All fields filled</div>
-        <button class="ak-edit-btn" id="edit-profile-btn">Edit Profile</button>
+
+        <!-- Credits display -->
+        <div class="ak-credits-box" id="credits-box">
+          <div class="ak-credits-count">
+            <span id="credit-num">3</span>
+            <span class="ak-credits-label">fills left</span>
+          </div>
+          <div class="ak-credits-bar">
+            <div class="ak-credits-fill" id="credits-fill" style="width:100%"></div>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="ak-done-actions">
+          <button class="ak-edit-btn" id="edit-profile-btn">Edit Profile</button>
+          <button class="ak-edit-btn ak-settings-btn" id="settings-btn">Settings</button>
+        </div>
+
+        <!-- Buy credits -->
+        <div class="ak-buy-section" id="buy-section">
+          <div class="ak-buy-card" id="buy-pack">
+            <div class="ak-buy-title">50 Autofills</div>
+            <div class="ak-buy-price">$0.99</div>
+            <div class="ak-buy-sub">Pay with Bitcoin Lightning</div>
+          </div>
+        </div>
+
+        <!-- Payment pending -->
+        <div class="ak-payment-pending" id="payment-pending" style="display:none">
+          <div class="ak-upload-spinner"></div>
+          <div class="ak-payment-msg">Waiting for payment...</div>
+          <div class="ak-payment-ln" id="ln-invoice-display"></div>
+          <button class="ak-copy-btn" id="copy-ln">Copy Lightning Invoice</button>
+          <div class="ak-payment-timer">Expires in <span id="pay-timer">30</span>s</div>
+        </div>
+      </div>
+
+      <!-- Settings panel -->
+      <div id="settings-panel" style="display:none">
+        <div class="ak-step-header">
+          <div class="ak-step-num" style="background:linear-gradient(135deg,#6366f1,#a855f7);font-size:16px">⚙</div>
+          <div>
+            <div class="ak-step-title">Settings</div>
+            <div class="ak-step-desc">API key & preferences</div>
+          </div>
+        </div>
+
+        <div class="ak-settings-card">
+          <div class="ak-setting-header">
+            <span class="ak-setting-title">Use your own API key</span>
+            <label class="ak-toggle">
+              <input type="checkbox" id="use-own-key">
+              <span class="ak-toggle-slider"></span>
+            </label>
+          </div>
+          <div class="ak-setting-desc">Bring your own Anthropic key for unlimited fills — no credits needed</div>
+          <div id="own-key-field" style="display:none">
+            <div class="ak-field" style="margin-top:10px;margin-bottom:0">
+              <input type="password" id="own-api-key" placeholder="sk-ant-api03-...">
+            </div>
+            <div class="ak-setting-hint">Your key stays in your browser. Never sent to our servers.</div>
+          </div>
+        </div>
+
+        <div class="ak-settings-card">
+          <div class="ak-setting-header">
+            <span class="ak-setting-title">User ID</span>
+          </div>
+          <div class="ak-setting-desc ak-user-id" id="user-id-display">Loading...</div>
+        </div>
+
+        <div class="ak-done-actions" style="margin-top:14px">
+          <button class="ak-save" id="save-settings-btn" style="font-size:13px;padding:10px">Save Settings</button>
+          <button class="ak-edit-btn" id="back-from-settings" style="margin-top:8px;width:100%">Back to Profile</button>
+        </div>
       </div>
 
       <!-- Editable form -->

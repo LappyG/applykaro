@@ -23,10 +23,10 @@ export default function Footer() {
           }}
         >
           <h3 className="text-lg font-bold mb-2" style={{ color: "var(--text-secondary)" }}>
-            🚀 Coming Soon: Auto-Apply for Naukri & Internshala
+            🚀 ApplyKaro Autofill — Chrome Extension
           </h3>
           <p className="text-sm mb-5 max-w-md mx-auto" style={{ color: "var(--text-muted)" }}>
-            Chrome extension that auto-fills job applications on Indian portals.
+            AI-powered Chrome extension that auto-fills job applications on any website.
             Join the waitlist to get early access.
           </p>
 
@@ -67,7 +67,7 @@ export default function Footer() {
         {/* Features coming */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
           {[
-            { emoji: "🔌", title: "Chrome Extension", desc: "Auto-fill Naukri, Internshala, LinkedIn applications", status: "Building" },
+            { emoji: "🔌", title: "Chrome Extension", desc: "Auto-fill job applications on any website with AI", status: "Building" },
             { emoji: "📊", title: "Application Tracker", desc: "Track all your applications in one dashboard", status: "Planned" },
             { emoji: "🤖", title: "AI Resume Rewriter", desc: "Rewrite your entire resume for any specific JD", status: "Planned" },
           ].map((f) => (
@@ -96,7 +96,7 @@ export default function Footer() {
         {/* Bottom */}
         <div className="text-center pt-6" style={{ borderTop: "1px solid var(--divider)" }}>
           <p className="text-xs mb-1" style={{ color: "var(--text-faint)" }}>
-            <span className="font-bold" style={{ color: "var(--text-muted)" }}>ApplyKaro</span> — AI-powered ATS scorer for Indian job seekers
+            <span className="font-bold" style={{ color: "var(--text-muted)" }}>ApplyKaro</span> — AI-powered ATS scorer, powered by Claude
           </p>
           <p className="text-[11px]" style={{ color: "var(--text-ghost)" }}>
             Your data stays in your browser. We don&apos;t store resumes.

@@ -12,6 +12,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 async function handleAutofill(fields, profile) {
+  // Get userId and settings
+  const data = await chrome.storage.local.get(["akUserId", "akSettings"]);
+  const userId = data.akUserId;
+  const settings = data.akSettings || {};
+
   // Strip fields down to what the API needs (reduce payload size)
   const compactFields = fields.map((f) => ({
     identifier: f.identifier,
@@ -35,30 +40,51 @@ async function handleAutofill(fields, profile) {
       : "",
   };
 
+  const requestBody = {
+    fields: compactFields,
+    profile: compactProfile,
+    userId: userId,
+  };
+
+  // If user has their own API key, include it
+  if (settings.useOwnKey && settings.ownApiKey) {
+    requestBody.userApiKey = settings.ownApiKey;
+  }
+
   try {
     const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        fields: compactFields,
-        profile: compactProfile,
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+
+      // Handle payment required
+      if (response.status === 402) {
+        throw new Error(
+          "No credits remaining. Open the ApplyKaro extension to buy more, or add your own API key in Settings."
+        );
+      }
+
       throw new Error(
         errorData.error || `API error: ${response.status} ${response.statusText}`
       );
     }
 
-    const data = await response.json();
+    const result = await response.json();
 
-    if (!data.mapping || typeof data.mapping !== "object") {
+    if (!result.mapping || typeof result.mapping !== "object") {
       throw new Error("Invalid response from AI service");
     }
 
-    return { mapping: data.mapping };
+    // Update cached credits if returned
+    if (typeof result.credits === "number") {
+      chrome.storage.local.set({ akCredits: result.credits });
+    }
+
+    return { mapping: result.mapping, credits: result.credits };
   } catch (err) {
     if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
       throw new Error(

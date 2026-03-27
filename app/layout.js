@@ -3,22 +3,21 @@ import ThemeProvider from "../components/ThemeProvider";
 import ThemeSwitcher from "../components/ThemeSwitcher";
 
 export const metadata = {
-  title: "ApplyKaro — AI-Powered ATS Resume Scorer for Indian Job Seekers",
+  title: "ApplyKaro — AI-Powered ATS Resume Scorer",
   description:
-    "Upload your resume and job description to get an instant ATS match score. AI-powered analysis with skill matching, keyword gaps, and rewrite suggestions. Built for Indian job seekers.",
+    "Upload your resume and job description to get an instant ATS match score. AI-powered analysis with skill matching, keyword gaps, and rewrite suggestions. Powered by Claude.",
   keywords: [
     "ATS score checker",
-    "resume scanner India",
-    "Naukri resume checker",
+    "resume scanner",
     "ATS resume score",
-    "job application India",
     "resume keyword checker",
     "AI resume analyzer",
     "ApplyKaro",
+    "Claude AI",
   ],
   openGraph: {
     title: "ApplyKaro — AI Resume Scorer",
-    description: "Check your ATS score before you apply. Free for Indian job seekers.",
+    description: "Check your ATS score before you apply. Powered by Claude.",
     type: "website",
   },
 };

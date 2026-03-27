@@ -26,7 +26,7 @@ export default function Hero() {
         }}
       >
         <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-        Powered by Claude AI
+        Powered by Claude
       </div>
 
       {/* Headline */}
@@ -47,7 +47,6 @@ export default function Hero() {
       <p className="relative text-base sm:text-lg max-w-xl mx-auto mb-8 leading-relaxed" style={{ color: "var(--text-muted)" }}>
         Upload your resume and job description. Get instant AI-powered analysis
         with skill matching, keyword gaps, and rewrite suggestions.
-        Built for Indian job seekers.
       </p>
 
       {/* CTA */}
@@ -68,7 +67,7 @@ export default function Hero() {
           { num: "45s", label: "Average scan time" },
           { num: "Free", label: "3 scans, no signup" },
           { num: "AI", label: "Semantic matching" },
-          { num: "🇮🇳", label: "Built for India" },
+          { num: "🌍", label: "Works globally" },
         ].map((s) => (
           <div key={s.label}>
             <div

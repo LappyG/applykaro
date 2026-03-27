@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "ApplyKaro Autofill",
   "version": "1.0.0",
-  "description": "AI-powered job application autofill. Fill any job form instantly with Claude AI.",
+  "description": "AI-powered job application autofill. Fill any job form instantly, powered by Claude.",
   "permissions": ["activeTab", "storage", "scripting"],
   "action": {
     "default_popup": "popup/popup.html",
