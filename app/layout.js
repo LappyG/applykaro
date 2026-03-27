@@ -1,4 +1,6 @@
 import "./globals.css";
+import ThemeProvider from "../components/ThemeProvider";
+import ThemeSwitcher from "../components/ThemeSwitcher";
 
 export const metadata = {
   title: "ApplyKaro — AI-Powered ATS Resume Scorer for Indian Job Seekers",
@@ -23,7 +25,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -33,7 +35,12 @@ export default function RootLayout({ children }) {
         />
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer />
       </head>
-      <body>{children}</body>
+      <body>
+        <ThemeProvider>
+          <ThemeSwitcher />
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   );
 }

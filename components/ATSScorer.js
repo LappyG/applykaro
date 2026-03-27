@@ -23,10 +23,10 @@ function AnalyzingState() {
   });
 
   return (
-    <div className="text-center py-16 rounded-2xl mb-5" style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}>
-      <div className="w-12 h-12 mx-auto mb-5 rounded-full animate-spin" style={{ border: "4px solid rgba(168,85,247,0.15)", borderTopColor: "#a855f7" }} />
-      <p className="text-[15px] font-semibold text-purple-400 mb-1.5">AI is analyzing your resume</p>
-      <p className="text-[13px] text-white/35 transition-opacity min-h-[20px]">{STEPS[step]}</p>
+    <div className="text-center py-16 rounded-2xl mb-5" style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}>
+      <div className="w-12 h-12 mx-auto mb-5 rounded-full animate-spin" style={{ border: "4px solid var(--spinner-track)", borderTopColor: "var(--accent)" }} />
+      <p className="text-[15px] font-semibold mb-1.5" style={{ color: "var(--accent)" }}>AI is analyzing your resume</p>
+      <p className="text-[13px] transition-opacity min-h-[20px]" style={{ color: "var(--text-faint)" }}>{STEPS[step]}</p>
     </div>
   );
 }
@@ -104,11 +104,11 @@ export default function ATSScorer({ pdfReady }) {
 
         {/* Status */}
         <div className="flex gap-4 justify-center mb-3.5 text-xs">
-          <span style={{ color: resumeText.trim().length > 30 ? "#4ade80" : "rgba(255,255,255,0.2)" }}>
+          <span style={{ color: resumeText.trim().length > 30 ? "#4ade80" : "var(--text-ghost)" }}>
             {resumeText.trim().length > 30 ? "✓" : "○"} Resume
             {resumeText ? ` (${resumeText.split(/\s+/).filter(Boolean).length} words)` : ""}
           </span>
-          <span style={{ color: jdText.trim().length > 30 ? "#4ade80" : "rgba(255,255,255,0.2)" }}>
+          <span style={{ color: jdText.trim().length > 30 ? "#4ade80" : "var(--text-ghost)" }}>
             {jdText.trim().length > 30 ? "✓" : "○"} JD
             {jdText ? ` (${jdText.split(/\s+/).filter(Boolean).length} words)` : ""}
           </span>
@@ -120,10 +120,10 @@ export default function ATSScorer({ pdfReady }) {
           disabled={!canAnalyze}
           className="w-full py-4 rounded-xl border-none text-base font-bold transition-all duration-300 cursor-pointer"
           style={{
-            background: canAnalyze ? "linear-gradient(135deg, #6366f1, #a855f7)" : "rgba(255,255,255,0.05)",
-            color: canAnalyze ? "#fff" : "rgba(255,255,255,0.15)",
+            background: canAnalyze ? `linear-gradient(135deg, var(--accent-secondary), var(--accent))` : "var(--disabled-bg)",
+            color: canAnalyze ? "#fff" : "var(--disabled-text)",
             cursor: canAnalyze ? "pointer" : "not-allowed",
-            boxShadow: canAnalyze ? "0 4px 24px rgba(99,102,241,0.25)" : "none",
+            boxShadow: canAnalyze ? `0 4px 24px var(--accent-glow)` : "none",
             fontFamily: "inherit",
           }}
         >
@@ -131,7 +131,7 @@ export default function ATSScorer({ pdfReady }) {
         </button>
 
         {aiError && (
-          <p className="text-center text-[13px] text-red-400 mt-3 py-2.5 px-4 rounded-xl" style={{ background: "rgba(239,68,68,0.08)" }}>
+          <p className="text-center text-[13px] text-red-400 mt-3 py-2.5 px-4 rounded-xl" style={{ background: "var(--error-bg)" }}>
             {aiError}
           </p>
         )}

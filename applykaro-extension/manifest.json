@@ -1,0 +1,44 @@
+{
+  "manifest_version": 3,
+  "name": "ApplyKaro Autofill",
+  "version": "1.0.0",
+  "description": "AI-powered job application autofill. Fill any job form instantly with Claude AI.",
+  "permissions": ["activeTab", "storage", "scripting"],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "content/detector.js",
+        "content/extractor.js",
+        "content/filler.js",
+        "content/ui.js"
+      ],
+      "css": ["content/content.css"],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["lib/pdf.worker.min.js"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "host_permissions": ["https://applykaro-nine.vercel.app/*"]
+}

@@ -1,0 +1,14 @@
+*.zip
+.DS_Store
+.claude/
+/ATS Scorer.js
+/Analyze (1).js
+/ApplyKaro ATS Scorer.jsx
+/Claude Conversation Results.js
+/Claude Conversation.js
+/Conversation with Claude.env.local
+/File Upload from Claude.js
+/Footer.js
+/Hero.js from Claude.js
+/Route (1).js
+/ScoreRing.js

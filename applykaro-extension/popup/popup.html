@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ApplyKaro Autofill</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="ak-popup">
+    <!-- Header -->
+    <div class="ak-header">
+      <div class="ak-logo">
+        <span class="ak-logo-icon">⚡</span>
+        <span class="ak-logo-text">ApplyKaro</span>
+      </div>
+      <div class="ak-header-right">
+        <span class="ak-completeness" id="completeness"></span>
+        <span class="ak-badge">Autofill</span>
+      </div>
+    </div>
+
+    <!-- ==================== -->
+    <!-- STEP 1: Resume Upload -->
+    <!-- ==================== -->
+    <div id="step-upload" class="ak-step">
+      <div class="ak-step-header">
+        <div class="ak-step-num">1</div>
+        <div>
+          <div class="ak-step-title">Upload Your Resume</div>
+          <div class="ak-step-desc">We'll extract your info automatically with AI</div>
+        </div>
+      </div>
+
+      <div class="ak-upload-zone" id="drop-zone">
+        <input type="file" id="resume-file" accept=".pdf" hidden>
+        <div class="ak-upload-icon">📄</div>
+        <div class="ak-upload-text">Drop your resume PDF here</div>
+        <div class="ak-upload-sub">or <span class="ak-upload-browse">browse files</span></div>
+      </div>
+
+      <div class="ak-upload-status" id="upload-status" style="display:none">
+        <div class="ak-upload-spinner" id="upload-spinner"></div>
+        <div class="ak-upload-msg" id="upload-msg">Reading PDF...</div>
+      </div>
+
+      <div class="ak-divider">
+        <span>or</span>
+      </div>
+
+      <button class="ak-skip-btn" id="skip-upload">Skip — I'll fill manually</button>
+    </div>
+
+    <!-- ========================== -->
+    <!-- STEP 2: Review + Extras    -->
+    <!-- ========================== -->
+    <div id="step-review" class="ak-step" style="display:none">
+      <!-- Profile complete state -->
+      <div id="profile-complete" class="ak-profile-done" style="display:none">
+        <div class="ak-done-icon">✓</div>
+        <div class="ak-done-title">Profile Complete</div>
+        <div class="ak-done-sub" id="done-sub">All fields filled</div>
+        <button class="ak-edit-btn" id="edit-profile-btn">Edit Profile</button>
+      </div>
+
+      <!-- Editable form -->
+      <div id="profile-form">
+        <div class="ak-step-header">
+          <div class="ak-step-num">2</div>
+          <div>
+            <div class="ak-step-title">Review Your Profile</div>
+            <div class="ak-step-desc">Verify AI-extracted data & add extra details</div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="ak-tabs">
+          <button class="ak-tab active" data-tab="personal">Personal</button>
+          <button class="ak-tab" data-tab="education">Education</button>
+          <button class="ak-tab" data-tab="experience">Experience</button>
+          <button class="ak-tab" data-tab="skills">Skills</button>
+          <button class="ak-tab" data-tab="extras">Extras</button>
+        </div>
+
+        <!-- Personal -->
+        <div class="ak-panel active" id="panel-personal">
+          <div class="ak-field">
+            <label>Full Name</label>
+            <input type="text" id="fullName" placeholder="Manan Awasthi">
+          </div>
+          <div class="ak-row">
+            <div class="ak-field">
+              <label>Email</label>
+              <input type="email" id="email" placeholder="you@email.com">
+            </div>
+            <div class="ak-field">
+              <label>Phone</label>
+              <input type="tel" id="phone" placeholder="+91 98765 43210">
+            </div>
+          </div>
+          <div class="ak-row">
+            <div class="ak-field">
+              <label>City</label>
+              <input type="text" id="city" placeholder="New Delhi">
+            </div>
+            <div class="ak-field">
+              <label>Gender</label>
+              <select id="gender">
+                <option value="">Select...</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Non-binary">Non-binary</option>
+                <option value="Prefer not to say">Prefer not to say</option>
+              </select>
+            </div>
+          </div>
+          <div class="ak-field">
+            <label>LinkedIn URL</label>
+            <input type="url" id="linkedin" placeholder="https://linkedin.com/in/yourname">
+          </div>
+          <div class="ak-row">
+            <div class="ak-field">
+              <label>Portfolio / Website</label>
+              <input type="url" id="portfolio" placeholder="https://yoursite.com">
+            </div>
+            <div class="ak-field">
+              <label>Date of Birth</label>
+              <input type="date" id="dob">
+            </div>
+          </div>
+        </div>
+
+        <!-- Education -->
+        <div class="ak-panel" id="panel-education">
+          <div id="edu-entries"></div>
+          <button class="ak-add-btn" id="add-edu">+ Add Education</button>
+        </div>
+
+        <!-- Experience -->
+        <div class="ak-panel" id="panel-experience">
+          <div id="exp-entries"></div>
+          <button class="ak-add-btn" id="add-exp">+ Add Experience</button>
+        </div>
+
+        <!-- Skills -->
+        <div class="ak-panel" id="panel-skills">
+          <div class="ak-field">
+            <label>Skills (comma-separated)</label>
+            <textarea id="skills" rows="4" placeholder="JavaScript, React, Node.js, Python, SQL..."></textarea>
+          </div>
+          <div class="ak-field">
+            <label>Resume Text (used for AI matching)</label>
+            <textarea id="resumeText" rows="5" placeholder="Auto-filled from your PDF. You can also paste/edit here..."></textarea>
+          </div>
+        </div>
+
+        <!-- Extras (not on resume) -->
+        <div class="ak-panel" id="panel-extras">
+          <div class="ak-extras-label">These are rarely on a resume — fill them once here</div>
+          <div class="ak-row">
+            <div class="ak-field">
+              <label>Expected CTC</label>
+              <input type="text" id="expectedCtc" placeholder="12 LPA">
+            </div>
+            <div class="ak-field">
+              <label>Current CTC</label>
+              <input type="text" id="currentCtc" placeholder="8 LPA">
+            </div>
+          </div>
+          <div class="ak-row">
+            <div class="ak-field">
+              <label>Notice Period</label>
+              <select id="noticePeriod">
+                <option value="">Select...</option>
+                <option value="Immediate">Immediate</option>
+                <option value="15 days">15 days</option>
+                <option value="30 days">30 days</option>
+                <option value="60 days">60 days</option>
+                <option value="90 days">90 days</option>
+              </select>
+            </div>
+            <div class="ak-field">
+              <label>Total Experience</label>
+              <input type="text" id="totalExp" placeholder="3 years">
+            </div>
+          </div>
+          <div class="ak-row">
+            <div class="ak-field">
+              <label>Willing to Relocate?</label>
+              <select id="relocate">
+                <option value="">Select...</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+                <option value="Depends">Depends on location</option>
+              </select>
+            </div>
+            <div class="ak-field">
+              <label>Preferred Locations</label>
+              <input type="text" id="preferredLocations" placeholder="Bangalore, Mumbai">
+            </div>
+          </div>
+        </div>
+
+        <!-- Save -->
+        <div class="ak-actions">
+          <button class="ak-save" id="save-btn">Save Profile</button>
+          <div class="ak-status" id="status"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../lib/pdf.min.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

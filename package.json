@@ -11,6 +11,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "engines": {
+    "node": ">=18.18.0"
+  },
   "dependencies": {
     "@tailwindcss/postcss": "^4.2.2",
     "next": "^16.2.1",

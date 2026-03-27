@@ -7,8 +7,6 @@ export default function Footer() {
 
   const handleSubmit = () => {
     if (!email.trim() || !email.includes("@")) return;
-    // TODO: Connect to your email service (Mailchimp, Resend, Supabase, etc.)
-    // For now, log it. Replace with actual API call.
     console.log("Waitlist signup:", email);
     setSubmitted(true);
   };
@@ -20,20 +18,20 @@ export default function Footer() {
         <div
           className="rounded-2xl p-8 text-center mb-8"
           style={{
-            background: "linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.08))",
-            border: "1px solid rgba(168,85,247,0.12)",
+            background: "linear-gradient(135deg, var(--section-gradient-start), var(--section-gradient-end))",
+            border: "1px solid var(--section-border)",
           }}
         >
-          <h3 className="text-lg font-bold text-white/80 mb-2">
+          <h3 className="text-lg font-bold mb-2" style={{ color: "var(--text-secondary)" }}>
             🚀 Coming Soon: Auto-Apply for Naukri & Internshala
           </h3>
-          <p className="text-sm text-white/40 mb-5 max-w-md mx-auto">
+          <p className="text-sm mb-5 max-w-md mx-auto" style={{ color: "var(--text-muted)" }}>
             Chrome extension that auto-fills job applications on Indian portals.
             Join the waitlist to get early access.
           </p>
 
           {submitted ? (
-            <div className="py-3 px-6 rounded-xl inline-block" style={{ background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)" }}>
+            <div className="py-3 px-6 rounded-xl inline-block" style={{ background: "var(--success-bg)", border: "1px solid var(--success-border)" }}>
               <p className="text-green-400 text-sm font-semibold m-0">✓ You&apos;re on the list! We&apos;ll notify you at launch.</p>
             </div>
           ) : (
@@ -45,9 +43,9 @@ export default function Footer() {
                 placeholder="your@email.com"
                 className="flex-1 py-3 px-4 rounded-xl outline-none text-sm"
                 style={{
-                  background: "rgba(0,0,0,0.3)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  color: "#e2e2e8",
+                  background: "var(--overlay-bg)",
+                  border: "1px solid var(--input-border)",
+                  color: "var(--text-primary)",
                   fontFamily: "inherit",
                 }}
                 onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
@@ -56,7 +54,7 @@ export default function Footer() {
                 onClick={handleSubmit}
                 className="py-3 px-6 rounded-xl border-none text-sm font-bold text-white cursor-pointer transition-all"
                 style={{
-                  background: "linear-gradient(135deg, #6366f1, #a855f7)",
+                  background: "linear-gradient(135deg, var(--accent-secondary), var(--accent))",
                   fontFamily: "inherit",
                 }}
               >
@@ -76,17 +74,17 @@ export default function Footer() {
             <div
               key={f.title}
               className="rounded-xl p-5"
-              style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)" }}
+              style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}
             >
               <div className="text-xl mb-2">{f.emoji}</div>
-              <h4 className="text-sm font-bold text-white/70 mb-1">{f.title}</h4>
-              <p className="text-xs text-white/30 leading-relaxed mb-2">{f.desc}</p>
+              <h4 className="text-sm font-bold mb-1" style={{ color: "var(--text-secondary)" }}>{f.title}</h4>
+              <p className="text-xs leading-relaxed mb-2" style={{ color: "var(--text-faint)" }}>{f.desc}</p>
               <span
                 className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
                 style={{
-                  background: f.status === "Building" ? "rgba(234,179,8,0.1)" : "rgba(255,255,255,0.05)",
-                  color: f.status === "Building" ? "#facc15" : "rgba(255,255,255,0.3)",
-                  border: `1px solid ${f.status === "Building" ? "rgba(234,179,8,0.15)" : "rgba(255,255,255,0.05)"}`,
+                  background: f.status === "Building" ? "var(--yellow-subtle-bg)" : "var(--neutral-subtle-bg)",
+                  color: f.status === "Building" ? "#facc15" : "var(--neutral-subtle-text)",
+                  border: `1px solid ${f.status === "Building" ? "var(--yellow-subtle-border)" : "var(--neutral-subtle-border)"}`,
                 }}
               >
                 {f.status}
@@ -96,11 +94,11 @@ export default function Footer() {
         </div>
 
         {/* Bottom */}
-        <div className="text-center pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}>
-          <p className="text-white/25 text-xs mb-1">
-            <span className="font-bold text-white/35">ApplyKaro</span> — AI-powered ATS scorer for Indian job seekers
+        <div className="text-center pt-6" style={{ borderTop: "1px solid var(--divider)" }}>
+          <p className="text-xs mb-1" style={{ color: "var(--text-faint)" }}>
+            <span className="font-bold" style={{ color: "var(--text-muted)" }}>ApplyKaro</span> — AI-powered ATS scorer for Indian job seekers
           </p>
-          <p className="text-white/15 text-[11px]">
+          <p className="text-[11px]" style={{ color: "var(--text-ghost)" }}>
             Your data stays in your browser. We don&apos;t store resumes.
           </p>
         </div>

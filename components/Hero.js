@@ -12,12 +12,19 @@ export default function Hero() {
         className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] opacity-20"
         style={{
           background:
-            "radial-gradient(ellipse at center, rgba(99,102,241,0.3) 0%, rgba(168,85,247,0.15) 40%, transparent 70%)",
+            "radial-gradient(ellipse at center, var(--gradient-hero-start) 0%, var(--gradient-hero-mid) 40%, transparent 70%)",
         }}
       />
 
       {/* Badge */}
-      <div className="relative inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-xs font-semibold text-purple-400 tracking-wide uppercase">
+      <div
+        className="relative inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase"
+        style={{
+          background: "var(--badge-bg)",
+          border: "1px solid var(--badge-border)",
+          color: "var(--accent)",
+        }}
+      >
         <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
         Powered by Claude AI
       </div>
@@ -25,13 +32,19 @@ export default function Hero() {
       {/* Headline */}
       <h1 className="relative text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-tight max-w-3xl mx-auto mb-5">
         Know your{" "}
-        <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+        <span
+          style={{
+            background: "linear-gradient(to right, var(--accent-secondary), var(--accent))",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
           ATS score
         </span>{" "}
         before you apply
       </h1>
 
-      <p className="relative text-base sm:text-lg text-white/40 max-w-xl mx-auto mb-8 leading-relaxed">
+      <p className="relative text-base sm:text-lg max-w-xl mx-auto mb-8 leading-relaxed" style={{ color: "var(--text-muted)" }}>
         Upload your resume and job description. Get instant AI-powered analysis
         with skill matching, keyword gaps, and rewrite suggestions.
         Built for Indian job seekers.
@@ -42,8 +55,8 @@ export default function Hero() {
         onClick={scrollToScorer}
         className="relative inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-white text-base cursor-pointer border-none transition-all duration-300 hover:scale-105"
         style={{
-          background: "linear-gradient(135deg, #6366f1, #a855f7)",
-          boxShadow: "0 4px 24px rgba(99,102,241,0.3)",
+          background: `linear-gradient(135deg, var(--accent-secondary), var(--accent))`,
+          boxShadow: `0 4px 24px var(--accent-glow)`,
         }}
       >
         Check Your Score — Free ↓
@@ -64,14 +77,14 @@ export default function Hero() {
             >
               {s.num}
             </div>
-            <div className="text-xs text-white/30 tracking-wide">{s.label}</div>
+            <div className="text-xs tracking-wide" style={{ color: "var(--text-faint)" }}>{s.label}</div>
           </div>
         ))}
       </div>
 
       {/* How it works */}
       <div className="relative max-w-2xl mx-auto mt-16">
-        <h2 className="text-sm font-bold text-white/30 uppercase tracking-widest mb-8">
+        <h2 className="text-sm font-bold uppercase tracking-widest mb-8" style={{ color: "var(--text-faint)" }}>
           How it works
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
@@ -96,18 +109,18 @@ export default function Hero() {
               key={item.step}
               className="p-5 rounded-2xl text-left"
               style={{
-                background: "rgba(255,255,255,0.025)",
-                border: "1px solid rgba(255,255,255,0.06)",
+                background: "var(--card-bg)",
+                border: "1px solid var(--card-border)",
               }}
             >
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-extrabold text-white mb-3"
-                style={{ background: "linear-gradient(135deg, #6366f1, #a855f7)" }}
+                style={{ background: `linear-gradient(135deg, var(--accent-secondary), var(--accent))` }}
               >
                 {item.step}
               </div>
-              <h3 className="text-sm font-bold text-white/80 mb-1.5">{item.title}</h3>
-              <p className="text-xs text-white/30 leading-relaxed">{item.desc}</p>
+              <h3 className="text-sm font-bold mb-1.5" style={{ color: "var(--text-secondary)" }}>{item.title}</h3>
+              <p className="text-xs leading-relaxed" style={{ color: "var(--text-faint)" }}>{item.desc}</p>
             </div>
           ))}
         </div>
