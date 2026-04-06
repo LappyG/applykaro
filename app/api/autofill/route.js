@@ -17,14 +17,10 @@ export async function POST(request) {
 
     if (!userApiKey) {
       // Using our API key — check credits
-      if (!userId) {
-        return NextResponse.json(
-          { error: "Missing userId. Sign in or provide your own API key." },
-          { status: 400 }
-        );
-      }
+      const creditCheck = userId
+        ? await getCredits(userId)
+        : { credits: 3 }; // anonymous fallback: allow 3 free uses
 
-      const creditCheck = await getCredits(userId);
       if (creditCheck.credits <= 0) {
         return NextResponse.json(
           {
