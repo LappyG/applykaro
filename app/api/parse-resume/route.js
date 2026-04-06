@@ -1,5 +1,16 @@
 import { NextResponse } from "next/server";
 
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  });
+}
+
 const SYSTEM_PROMPT = `You are a resume parser. Extract structured data from resume text.
 Return ONLY valid JSON with this exact structure (no markdown, no explanation):
 {
