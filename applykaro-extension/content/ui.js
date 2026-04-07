@@ -1,451 +1,253 @@
-// UI layer: floating button + result overlay
 (function () {
   if (window.__akUILoaded) return;
   window.__akUILoaded = true;
 
-  // Create shadow DOM host to avoid style conflicts
-  const host = document.createElement("div");
-  host.id = "applykaro-host";
-  const shadow = host.attachShadow({ mode: "closed" });
-
-  // Inject styles into shadow DOM
-  const style = document.createElement("style");
-  style.textContent = `
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-
-    .ak-float-btn {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 2147483647;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 20px;
-      border: none;
-      border-radius: 50px;
-      background: linear-gradient(135deg, #6366f1, #a855f7);
-      color: #fff;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 24px rgba(99, 102, 241, 0.4);
-      transition: all 0.2s;
-      animation: ak-slideUp 0.4s ease-out;
+  // ── Inject styles directly into page (prefixed to avoid conflicts) ──
+  const styleEl = document.createElement("style");
+  styleEl.id = "ak-styles";
+  styleEl.textContent = `
+    #ak-float-btn {
+      position: fixed !important;
+      bottom: 24px !important;
+      right: 24px !important;
+      z-index: 2147483647 !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 8px !important;
+      padding: 12px 20px !important;
+      border: none !important;
+      border-radius: 50px !important;
+      background: linear-gradient(135deg, #6366f1, #a855f7) !important;
+      color: #fff !important;
+      font-size: 14px !important;
+      font-weight: 700 !important;
+      cursor: pointer !important;
+      box-shadow: 0 4px 24px rgba(99,102,241,0.4) !important;
+      font-family: system-ui, sans-serif !important;
+      letter-spacing: 0 !important;
+      text-transform: none !important;
+      line-height: 1 !important;
+      pointer-events: all !important;
     }
-    .ak-float-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 32px rgba(99, 102, 241, 0.5);
+    #ak-float-btn:hover {
+      transform: translateY(-2px) !important;
     }
-    .ak-float-btn.loading {
-      opacity: 0.8;
-      pointer-events: none;
+    #ak-overlay {
+      position: fixed !important;
+      bottom: 24px !important;
+      right: 24px !important;
+      z-index: 2147483647 !important;
+      width: 320px !important;
+      max-height: 440px !important;
+      border-radius: 16px !important;
+      background: #0f0f18 !important;
+      border: 1px solid rgba(255,255,255,0.1) !important;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6) !important;
+      overflow-y: auto !important;
+      font-family: system-ui, sans-serif !important;
+      font-size: 13px !important;
+      color: #e2e2e8 !important;
+      padding: 16px !important;
     }
-    .ak-float-btn .ak-spinner {
-      width: 16px;
-      height: 16px;
-      border: 2px solid rgba(255,255,255,0.3);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: ak-spin 0.8s linear infinite;
-    }
-
-    @keyframes ak-slideUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes ak-spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* Overlay */
-    .ak-overlay {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      z-index: 2147483647;
-      width: 340px;
-      max-height: 460px;
-      border-radius: 16px;
-      background: #0f0f18;
-      border: 1px solid rgba(255,255,255,0.08);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-      overflow: hidden;
-      animation: ak-slideUp 0.3s ease-out;
-      display: flex;
-      flex-direction: column;
-    }
-    .ak-overlay-header {
-      padding: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-    }
-    .ak-overlay-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #e2e2e8;
-    }
-    .ak-overlay-close {
-      width: 28px;
-      height: 28px;
-      border-radius: 8px;
-      border: none;
-      background: rgba(255,255,255,0.06);
-      color: rgba(255,255,255,0.5);
-      font-size: 16px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .ak-overlay-close:hover {
-      background: rgba(255,255,255,0.1);
-    }
-    .ak-overlay-body {
-      padding: 16px;
-      overflow-y: auto;
-      flex: 1;
-    }
-    .ak-overlay-body::-webkit-scrollbar { width: 3px; }
-    .ak-overlay-body::-webkit-scrollbar-thumb { background: rgba(168,85,247,0.3); border-radius: 3px; }
-
-    .ak-section-label {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 8px;
-      padding: 4px 8px;
-      border-radius: 6px;
-    }
-    .ak-section-label.success {
-      color: #4ade80;
-      background: rgba(34,197,94,0.1);
-    }
-    .ak-section-label.warning {
-      color: #facc15;
-      background: rgba(234,179,8,0.08);
-    }
-    .ak-section-label.error {
-      color: #f87171;
-      background: rgba(239,68,68,0.08);
-    }
-
-    .ak-result-item {
-      padding: 8px 10px;
-      border-radius: 8px;
-      margin-bottom: 4px;
-      font-size: 12px;
-      background: rgba(255,255,255,0.025);
-      border: 1px solid rgba(255,255,255,0.04);
-    }
-    .ak-result-label {
-      color: rgba(255,255,255,0.5);
-      font-weight: 600;
-      margin-bottom: 2px;
-    }
-    .ak-result-value {
-      color: #e2e2e8;
-      word-break: break-word;
-    }
-    .ak-result-reason {
-      color: rgba(255,255,255,0.3);
-      font-size: 11px;
-      font-style: italic;
-    }
-
-    .ak-summary {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 14px;
-    }
-    .ak-summary-stat {
-      flex: 1;
-      text-align: center;
-      padding: 10px 8px;
-      border-radius: 10px;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.05);
-    }
-    .ak-summary-num {
-      font-size: 20px;
-      font-weight: 800;
-    }
-    .ak-summary-num.green { color: #4ade80; }
-    .ak-summary-num.yellow { color: #facc15; }
-    .ak-summary-num.red { color: #f87171; }
-    .ak-summary-label {
-      font-size: 10px;
-      color: rgba(255,255,255,0.35);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-top: 2px;
-    }
-
-    .ak-no-profile {
-      text-align: center;
-      padding: 24px 16px;
-      color: rgba(255,255,255,0.4);
-      font-size: 13px;
-      line-height: 1.5;
-    }
-    .ak-no-profile strong {
-      color: #a855f7;
-    }
-
-    .ak-error-msg {
-      text-align: center;
-      padding: 16px;
-      color: #f87171;
-      font-size: 13px;
-    }
-
-    .ak-note {
-      margin-top: 12px;
-      padding: 10px;
-      border-radius: 8px;
-      background: rgba(168,85,247,0.06);
-      border: 1px solid rgba(168,85,247,0.12);
-      color: rgba(255,255,255,0.45);
-      font-size: 11px;
-      text-align: center;
+    #ak-overlay-close {
+      position: absolute !important;
+      top: 12px !important;
+      right: 12px !important;
+      width: 26px !important;
+      height: 26px !important;
+      border-radius: 8px !important;
+      border: none !important;
+      background: rgba(255,255,255,0.08) !important;
+      color: #fff !important;
+      font-size: 16px !important;
+      cursor: pointer !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      line-height: 1 !important;
     }
   `;
-  shadow.appendChild(style);
-
-  const container = document.createElement("div");
-  shadow.appendChild(container);
+  document.head.appendChild(styleEl);
 
   let floatingBtn = null;
   let overlay = null;
 
+  // ── Floating button ──
   function showButton() {
-    if (floatingBtn) return;
+    if (floatingBtn || document.getElementById("ak-float-btn")) return;
+
     floatingBtn = document.createElement("button");
-    floatingBtn.className = "ak-float-btn";
-    floatingBtn.innerHTML = "⚡ ApplyKaro";
-    floatingBtn.addEventListener("click", handleAutofill);
-    container.appendChild(floatingBtn);
+    floatingBtn.id = "ak-float-btn";
+    floatingBtn.textContent = "⚡ ApplyKaro";
+    floatingBtn.type = "button";
+
+    floatingBtn.onclick = function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      startAutofill();
+      return false;
+    };
+
+    document.body.appendChild(floatingBtn);
   }
 
-  function setButtonLoading(loading) {
+  function setLoading(loading) {
     if (!floatingBtn) return;
-    if (loading) {
-      floatingBtn.classList.add("loading");
-      floatingBtn.innerHTML = '<div class="ak-spinner"></div> Analyzing...';
-    } else {
-      floatingBtn.classList.remove("loading");
-      floatingBtn.innerHTML = "⚡ ApplyKaro";
-    }
+    floatingBtn.textContent = loading ? "⏳ Analyzing..." : "⚡ ApplyKaro";
+    floatingBtn.style.opacity = loading ? "0.75" : "1";
+    floatingBtn.disabled = loading;
   }
 
   function removeButton() {
-    if (floatingBtn) {
-      floatingBtn.remove();
-      floatingBtn = null;
-    }
+    if (floatingBtn) { floatingBtn.remove(); floatingBtn = null; }
   }
 
-  function showOverlay(results) {
-    removeButton();
-    if (overlay) overlay.remove();
-
+  // ── Overlay ──
+  function showOverlay(html) {
+    removeOverlay();
     overlay = document.createElement("div");
-    overlay.className = "ak-overlay";
-
-    const header = document.createElement("div");
-    header.className = "ak-overlay-header";
-    header.innerHTML = `
-      <div class="ak-overlay-title">⚡ Autofill Results</div>
-      <button class="ak-overlay-close">&times;</button>
+    overlay.id = "ak-overlay";
+    overlay.innerHTML = `
+      <button id="ak-overlay-close" type="button">✕</button>
+      ${html}
     `;
-    header.querySelector(".ak-overlay-close").addEventListener("click", () => {
-      overlay.remove();
-      overlay = null;
-      // Re-show button
+    document.body.appendChild(overlay);
+    document.getElementById("ak-overlay-close").onclick = function () {
+      removeOverlay();
       showButton();
-    });
-    overlay.appendChild(header);
+    };
+  }
 
-    const body = document.createElement("div");
-    body.className = "ak-overlay-body";
-
-    // Summary stats
-    const summary = document.createElement("div");
-    summary.className = "ak-summary";
-    summary.innerHTML = `
-      <div class="ak-summary-stat">
-        <div class="ak-summary-num green">${results.filled.length}</div>
-        <div class="ak-summary-label">Filled</div>
-      </div>
-      <div class="ak-summary-stat">
-        <div class="ak-summary-num yellow">${results.skipped.length}</div>
-        <div class="ak-summary-label">Skipped</div>
-      </div>
-      <div class="ak-summary-stat">
-        <div class="ak-summary-num red">${results.failed.length}</div>
-        <div class="ak-summary-label">Failed</div>
-      </div>
-    `;
-    body.appendChild(summary);
-
-    // Filled fields
-    if (results.filled.length > 0) {
-      const label = document.createElement("div");
-      label.className = "ak-section-label success";
-      label.textContent = `✓ Filled (${results.filled.length})`;
-      body.appendChild(label);
-
-      results.filled.forEach((f) => {
-        const item = document.createElement("div");
-        item.className = "ak-result-item";
-        item.innerHTML = `
-          <div class="ak-result-label">${escapeHtml(f.label || f.identifier)}</div>
-          <div class="ak-result-value">${escapeHtml(truncate(f.value, 80))}</div>
-        `;
-        body.appendChild(item);
-      });
-    }
-
-    // Skipped
-    if (results.skipped.length > 0) {
-      const label = document.createElement("div");
-      label.className = "ak-section-label warning";
-      label.textContent = `⏭ Skipped (${results.skipped.length})`;
-      label.style.marginTop = "12px";
-      body.appendChild(label);
-
-      results.skipped.forEach((f) => {
-        const item = document.createElement("div");
-        item.className = "ak-result-item";
-        item.innerHTML = `
-          <div class="ak-result-label">${escapeHtml(f.label || f.identifier)}</div>
-          <div class="ak-result-reason">${escapeHtml(f.reason)}</div>
-        `;
-        body.appendChild(item);
-      });
-    }
-
-    // Failed
-    if (results.failed.length > 0) {
-      const label = document.createElement("div");
-      label.className = "ak-section-label error";
-      label.textContent = `✗ Needs Attention (${results.failed.length})`;
-      label.style.marginTop = "12px";
-      body.appendChild(label);
-
-      results.failed.forEach((f) => {
-        const item = document.createElement("div");
-        item.className = "ak-result-item";
-        item.innerHTML = `
-          <div class="ak-result-label">${escapeHtml(f.label || f.identifier)}</div>
-          <div class="ak-result-reason">${escapeHtml(f.reason)}</div>
-        `;
-        body.appendChild(item);
-      });
-    }
-
-    // Note
-    const note = document.createElement("div");
-    note.className = "ak-note";
-    note.textContent = "Review all fields before submitting. ApplyKaro never auto-submits.";
-    body.appendChild(note);
-
-    overlay.appendChild(body);
-    container.appendChild(overlay);
+  function removeOverlay() {
+    if (overlay) { overlay.remove(); overlay = null; }
+    const old = document.getElementById("ak-overlay");
+    if (old) old.remove();
   }
 
   function showError(msg) {
-    setButtonLoading(false);
+    setLoading(false);
     removeButton();
+    showOverlay(`
+      <div style="margin-top:8px;padding:12px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);border-radius:10px;color:#f87171;font-size:13px;line-height:1.5">
+        ⚠️ ${msg}
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3);text-align:center">
+        Open the ApplyKaro extension icon to manage your profile
+      </div>
+    `);
+  }
 
-    if (overlay) overlay.remove();
-    overlay = document.createElement("div");
-    overlay.className = "ak-overlay";
+  function showResults(results) {
+    removeButton();
+    const filledHtml = results.filled.map(f =>
+      `<div style="padding:6px 10px;margin-bottom:3px;border-radius:6px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.1)">
+        <span style="color:rgba(255,255,255,0.4);font-size:11px">${esc(f.label||f.identifier)}</span><br>
+        <span style="color:#e2e2e8">${esc(String(f.value||"").substring(0,60))}</span>
+      </div>`
+    ).join("");
 
-    const header = document.createElement("div");
-    header.className = "ak-overlay-header";
-    header.innerHTML = `
-      <div class="ak-overlay-title">⚡ ApplyKaro</div>
-      <button class="ak-overlay-close">&times;</button>
-    `;
-    header.querySelector(".ak-overlay-close").addEventListener("click", () => {
-      overlay.remove();
-      overlay = null;
-      showButton();
+    const skippedHtml = results.skipped.length
+      ? `<div style="margin-top:10px;font-size:11px;color:rgba(255,255,255,0.3)">${results.skipped.length} fields skipped (already filled or no match)</div>`
+      : "";
+
+    const failedHtml = results.failed.length
+      ? `<div style="margin-top:6px;font-size:11px;color:#f87171">${results.failed.length} fields need manual attention</div>`
+      : "";
+
+    showOverlay(`
+      <div style="font-weight:700;font-size:14px;margin-bottom:12px;padding-right:24px">
+        ⚡ Autofill Results
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <div style="flex:1;text-align:center;padding:8px;background:rgba(34,197,94,0.08);border-radius:8px">
+          <div style="font-size:20px;font-weight:800;color:#4ade80">${results.filled.length}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.4)">FILLED</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:8px;background:rgba(234,179,8,0.08);border-radius:8px">
+          <div style="font-size:20px;font-weight:800;color:#facc15">${results.skipped.length}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.4)">SKIPPED</div>
+        </div>
+        <div style="flex:1;text-align:center;padding:8px;background:rgba(239,68,68,0.08);border-radius:8px">
+          <div style="font-size:20px;font-weight:800;color:#f87171">${results.failed.length}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.4)">FAILED</div>
+        </div>
+      </div>
+      ${filledHtml}${skippedHtml}${failedHtml}
+      <div style="margin-top:12px;padding:8px;border-radius:8px;background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.12);font-size:11px;color:rgba(255,255,255,0.35);text-align:center">
+        Review all fields before submitting. ApplyKaro never auto-submits.
+      </div>
+    `);
+  }
+
+  function esc(str) {
+    const d = document.createElement("div");
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  // ── Main autofill flow ──
+  function startAutofill() {
+    setLoading(true);
+    runAutofill().catch(function (err) {
+      console.error("[ApplyKaro]", err);
+      showError(err.message || "Something went wrong. Check the browser console.");
     });
-    overlay.appendChild(header);
-
-    const body = document.createElement("div");
-    body.className = "ak-overlay-body";
-    body.innerHTML = `<div class="ak-error-msg">${escapeHtml(msg)}</div>`;
-    overlay.appendChild(body);
-    container.appendChild(overlay);
   }
 
-  function escapeHtml(str) {
-    const div = document.createElement("div");
-    div.textContent = str;
-    return div.innerHTML;
-  }
-
-  function truncate(str, max) {
-    return str.length > max ? str.substring(0, max) + "..." : str;
-  }
-
-  // --- Main autofill flow ---
-  async function handleAutofill() {
-    setButtonLoading(true);
-
-    // 1. Check if profile exists
-    const { akProfile } = await chrome.storage.local.get("akProfile");
-    if (!akProfile || !akProfile.fullName) {
-      showError("No profile found. Click the ApplyKaro extension icon to set up your profile first.");
-      return;
+  async function runAutofill() {
+    // 1. Get profile
+    let akProfile;
+    try {
+      const result = await chrome.storage.local.get("akProfile");
+      akProfile = result.akProfile;
+    } catch (err) {
+      throw new Error("Cannot read profile from storage: " + err.message);
     }
 
-    // 2. Extract fields
+    if (!akProfile || !akProfile.fullName) {
+      throw new Error("No profile set up yet. Click the ⚡ ApplyKaro extension icon in your Chrome toolbar to add your profile.");
+    }
+
+    // 2. Extract form fields
+    if (!window.__akExtractFields) {
+      throw new Error("Field extractor not loaded. Please reload the page and try again.");
+    }
     const fields = window.__akExtractFields();
     if (!fields || fields.length === 0) {
-      showError("No form fields detected on this page.");
-      return;
+      throw new Error("No fillable form fields found on this page.");
     }
-
     window.__akLastExtracted = fields;
 
-    // 3. Send to background for AI mapping
+    // 3. Call background service worker
+    let response;
     try {
-      const response = await chrome.runtime.sendMessage({
-        type: "AK_AUTOFILL",
-        fields,
-        profile: akProfile,
-      });
-
-      if (response.error) {
-        showError(response.error);
-        return;
-      }
-
-      // 4. Fill fields
-      const results = window.__akFillFields(response.mapping);
-
-      // 5. Show results overlay
-      showOverlay(results);
+      response = await chrome.runtime.sendMessage({ type: "AK_AUTOFILL", fields, profile: akProfile });
     } catch (err) {
-      showError("Failed to connect to AI service. Please try again.");
+      // Retry once — service worker may have gone idle
+      await new Promise(r => setTimeout(r, 800));
+      try {
+        response = await chrome.runtime.sendMessage({ type: "AK_AUTOFILL", fields, profile: akProfile });
+      } catch (err2) {
+        throw new Error("Cannot reach extension. Go to chrome://extensions and click Reload on ApplyKaro Autofill.");
+      }
     }
+
+    if (!response) throw new Error("Empty response from service. Try again.");
+    if (response.error) throw new Error(response.error);
+    if (!response.mapping) throw new Error("AI returned no mapping. Try again.");
+
+    // 4. Fill fields
+    if (!window.__akFillFields) {
+      throw new Error("Filler not loaded. Please reload the page.");
+    }
+    const results = window.__akFillFields(response.mapping);
+
+    // 5. Show results
+    showResults(results);
   }
 
-  // --- Listen for form detection ---
+  // ── Listen for detection event ──
   window.addEventListener("ak-form-detected", showButton);
+  if (window.__akFormDetected) showButton();
 
-  // If already detected before UI loaded
-  if (window.__akFormDetected) {
-    showButton();
-  }
-
-  // Append host to page
-  document.documentElement.appendChild(host);
 })();

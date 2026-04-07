@@ -464,15 +464,54 @@ async function fetchCredits() {
   }
 }
 
-// Buy credits
+// Buy credits — opens Gumroad checkout with userId embedded
+const GUMROAD_URL = "https://gumroad.com/l/lkmqox";
+
 document.getElementById("buy-pack").addEventListener("click", async () => {
   const { akUserId } = await chrome.storage.local.get("akUserId");
   if (!akUserId) return;
 
+  // Open Gumroad with userId as a custom field so webhook can identify user
+  const checkoutUrl = `${GUMROAD_URL}?wanted=true&custom_fields[userId]=${encodeURIComponent(akUserId)}`;
+  chrome.tabs.create({ url: checkoutUrl });
+
+  // Show waiting message
   buySection.style.display = "none";
   paymentPending.style.display = "block";
+  document.querySelector(".ak-payment-msg").textContent = "Waiting for payment...";
 
-  try {
+  // Poll credits every 3s — will update once Gumroad webhook fires
+  const poll = setInterval(async () => {
+    try {
+      const { akCredits } = await chrome.storage.local.get("akCredits");
+      const res = await fetch(`${API_BASE}/api/credits`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: akUserId }),
+      });
+      const data = await res.json();
+      if (data.credits > (akCredits || 3)) {
+        clearInterval(poll);
+        updateCreditsUI(data.credits);
+        chrome.storage.local.set({ akCredits: data.credits });
+        document.querySelector(".ak-payment-msg").textContent = "✓ Payment confirmed! Credits added.";
+        setTimeout(() => {
+          paymentPending.style.display = "none";
+          buySection.style.display = "block";
+        }, 2000);
+      }
+    } catch { /* ignore */ }
+  }, 3000);
+
+  // Stop polling after 10 minutes
+  setTimeout(() => {
+    clearInterval(poll);
+    if (paymentPending.style.display !== "none") {
+      document.querySelector(".ak-payment-msg").textContent = "Payment not detected yet. Reload extension after paying.";
+    }
+  }, 600000);
+
+  if (false) { // keep old code structure
     const res = await fetch(`${API_BASE}/api/payment/create`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

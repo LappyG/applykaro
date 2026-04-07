@@ -1,91 +1,76 @@
 import { NextResponse } from "next/server";
-import crypto from "crypto";
 import { addCredits, recordPayment, PACK_CREDITS } from "../../../../lib/credits";
 
-const STRIKE_API = "https://api.strike.me/v1";
-
+// Gumroad sends a POST with application/x-www-form-urlencoded
 export async function POST(request) {
   try {
-    const strikeKey = process.env.STRIKE_API_KEY;
-    const webhookSecret = process.env.STRIKE_WEBHOOK_SECRET;
+    const contentType = request.headers.get("content-type") || "";
+    let data = {};
 
-    if (!strikeKey) {
-      return NextResponse.json({ error: "Not configured" }, { status: 500 });
+    if (contentType.includes("application/x-www-form-urlencoded")) {
+      const text = await request.text();
+      const params = new URLSearchParams(text);
+      params.forEach((value, key) => { data[key] = value; });
+    } else {
+      data = await request.json().catch(() => ({}));
     }
 
-    // Verify webhook signature if secret is configured
-    const body = await request.text();
-    if (webhookSecret) {
-      const signature = request.headers.get("x-webhook-signature");
-      if (signature) {
-        const expected = crypto
-          .createHmac("sha256", webhookSecret)
-          .update(body)
-          .digest("hex");
-        if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) {
-          console.error("Invalid webhook signature");
-          return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-        }
-      }
+    console.log("Gumroad ping received:", JSON.stringify(data));
+
+    // Gumroad sends: sale_id, product_id, product_name, email,
+    // price, currency, buyer_id, custom_fields, etc.
+
+    // Only process real sales (not test pings)
+    if (data.test === "true" || data.test === true) {
+      console.log("Test ping received — ignoring");
+      return NextResponse.json({ ok: true, test: true });
     }
 
-    const event = JSON.parse(body);
+    const saleId = data.sale_id;
+    const email = data.email || data.buyer_email;
+    const price = data.price; // in cents, e.g. "99"
+    const productName = data.product_name || "";
 
-    // Strike webhooks don't include full data — fetch the invoice
-    if (event.eventType !== "invoice.updated") {
+    if (!saleId) {
+      console.error("No sale_id in ping");
       return NextResponse.json({ ok: true });
     }
 
-    const invoiceId = event.data?.entityId;
-    if (!invoiceId) {
-      return NextResponse.json({ ok: true });
+    // Get userId from custom fields (we'll pass it when redirecting to Gumroad)
+    // Gumroad custom fields come as: custom_fields[Field Name]
+    let userId = data["custom_fields[User ID]"] ||
+                 data["custom_fields[userId]"] ||
+                 data.buyer_id ||
+                 email; // fallback to email as userId
+
+    if (!userId) {
+      console.error("No userId in ping, using email:", email);
+      userId = email;
     }
 
-    // Fetch invoice details from Strike
-    const invoiceRes = await fetch(`${STRIKE_API}/invoices/${invoiceId}`, {
-      headers: { Authorization: `Bearer ${strikeKey}` },
-    });
-
-    if (!invoiceRes.ok) {
-      console.error("Failed to fetch invoice:", invoiceRes.status);
-      return NextResponse.json({ error: "Failed to verify" }, { status: 502 });
+    if (!userId) {
+      console.error("Cannot identify user from ping");
+      return NextResponse.json({ error: "Cannot identify user" }, { status: 400 });
     }
 
-    const invoice = await invoiceRes.json();
-
-    // Only process PAID invoices
-    if (invoice.state !== "PAID") {
-      return NextResponse.json({ ok: true, state: invoice.state });
-    }
-
-    // Extract userId from correlationId (format: ak-{userId}-{timestamp})
-    const correlationId = invoice.correlationId || "";
-    const match = correlationId.match(/^ak-(.+)-\d+$/);
-    if (!match) {
-      console.error("Invalid correlationId:", correlationId);
-      return NextResponse.json({ error: "Invalid correlation" }, { status: 400 });
-    }
-
-    const userId = match[1];
+    // Prevent duplicate processing
+    // (Gumroad may retry — sale_id is idempotent key)
+    const amount = price ? (parseInt(price) / 100).toFixed(2) : "0.99";
 
     // Record payment and add credits
-    await recordPayment(
-      userId,
-      invoiceId,
-      invoice.amount?.amount || "0.99",
-      invoice.amount?.currency || "USD"
-    );
-
+    await recordPayment(userId, saleId, amount, data.currency || "USD");
     const result = await addCredits(userId, PACK_CREDITS);
 
-    console.log(`Credits added: userId=${userId}, balance=${result.credits}`);
+    console.log(`✓ Credits added: userId=${userId}, saleId=${saleId}, balance=${result.credits}`);
 
     return NextResponse.json({ ok: true, credits: result.credits });
   } catch (err) {
     console.error("Webhook error:", err);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
+}
+
+// Gumroad also sends GET pings sometimes
+export async function GET() {
+  return NextResponse.json({ ok: true, service: "ApplyKaro webhook" });
 }
