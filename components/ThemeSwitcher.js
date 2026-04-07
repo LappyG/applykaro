@@ -11,7 +11,7 @@ export default function ThemeSwitcher() {
   const { theme, setTheme } = useTheme();
 
   return (
-    <div className="fixed top-4 right-4 z-50 flex gap-1 p-1 rounded-xl theme-switcher-bg">
+    <div className="fixed top-14 right-4 z-50 flex gap-1 p-1 rounded-xl theme-switcher-bg">
       {themes.map((t) => (
         <button
           key={t.id}
