@@ -1,8 +1,4 @@
-"use client";
-import { useState } from "react";
-
 export default function ExtensionPage() {
-  const [expandedStep, setExpandedStep] = useState(null);
 
   return (
     <main className="min-h-screen px-4 py-12">
@@ -50,26 +46,38 @@ export default function ExtensionPage() {
             Upload your resume once, fill forms with one click. Powered by Claude.
           </p>
 
-          {/* Download button */}
-          <a
-            href="/applykaro-extension.zip"
-            download
-            className="inline-flex items-center gap-3 px-8 py-4 rounded-xl font-bold text-white text-base no-underline cursor-pointer border-none transition-all duration-300 hover:scale-105"
-            style={{
-              background: "linear-gradient(135deg, var(--accent-secondary), var(--accent))",
-              boxShadow: "0 4px 24px var(--accent-glow)",
-            }}
+          {/* Store button */}
+          <div
+            className="inline-flex flex-col items-center gap-3"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            Download Extension (ZIP)
-          </a>
+            <div
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-xl font-bold text-white text-base cursor-not-allowed select-none"
+              style={{
+                background: "linear-gradient(135deg, var(--accent-secondary), var(--accent))",
+                boxShadow: "0 4px 24px var(--accent-glow)",
+                opacity: 0.75,
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+              </svg>
+              Add to Chrome — Coming Soon
+            </div>
+            <div
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+              style={{
+                background: "rgba(250,204,21,0.1)",
+                border: "1px solid rgba(250,204,21,0.2)",
+                color: "#facc15",
+              }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse" />
+              Pending Chrome Web Store Review
+            </div>
+          </div>
 
           <p className="text-xs mt-3" style={{ color: "var(--text-faint)" }}>
-            v1.0.0 &middot; Chrome &middot; Manifest V3 &middot; ~2MB
+            v1.0.0 &middot; Chrome &middot; Manifest V3 &middot; Free to install
           </p>
         </div>
 
@@ -101,74 +109,32 @@ export default function ExtensionPage() {
           </div>
         </div>
 
-        {/* Installation steps */}
+        {/* How it works */}
         <div
           className="rounded-2xl p-6 sm:p-8 mb-8"
           style={{ background: "var(--card-bg)", border: "1px solid var(--card-border)" }}
         >
           <h2 className="text-lg font-bold mb-5" style={{ color: "var(--text-secondary)" }}>
-            Install in 3 steps
+            How it works
           </h2>
-
-          {[
-            {
-              step: "1",
-              title: "Download & unzip",
-              desc: "Click the download button above. Extract the ZIP file — you'll get a folder called applykaro-extension.",
-              detail: "On Mac: double-click the ZIP. On Windows: right-click → Extract All.",
-            },
-            {
-              step: "2",
-              title: "Open Chrome Extensions",
-              desc: "Go to chrome://extensions in your browser. Turn on \"Developer mode\" (toggle in top-right corner).",
-              detail: "Or type chrome://extensions in the address bar and press Enter.",
-            },
-            {
-              step: "3",
-              title: "Load the extension",
-              desc: "Click \"Load unpacked\" → select the applykaro-extension folder. Done! You'll see the ApplyKaro icon in your toolbar.",
-              detail: "If you don't see it, click the puzzle icon in Chrome toolbar and pin ApplyKaro.",
-            },
-          ].map((item) => (
-            <div
-              key={item.step}
-              className="mb-4 last:mb-0 rounded-xl overflow-hidden"
-              style={{ border: "1px solid var(--card-border)" }}
-            >
-              <button
-                onClick={() => setExpandedStep(expandedStep === item.step ? null : item.step)}
-                className="w-full flex items-center gap-4 p-4 text-left cursor-pointer border-none"
-                style={{ background: "var(--input-bg)", fontFamily: "inherit" }}
-              >
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { step: "1", title: "Upload Resume", desc: "Drop your PDF in the extension popup. AI extracts your details automatically." },
+              { step: "2", title: "Review Profile", desc: "Check your parsed info — name, experience, education, skills. Edit anything." },
+              { step: "3", title: "Click Autofill", desc: "Open any job application, click the ApplyKaro button. Done in seconds." },
+            ].map((item) => (
+              <div key={item.step} className="p-4 rounded-xl" style={{ background: "var(--overlay-bg)", border: "1px solid var(--card-border)" }}>
                 <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-extrabold text-white flex-shrink-0"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-extrabold text-white mb-3"
                   style={{ background: "linear-gradient(135deg, var(--accent-secondary), var(--accent))" }}
                 >
                   {item.step}
                 </div>
-                <div className="flex-1">
-                  <h3 className="text-sm font-bold m-0" style={{ color: "var(--text-secondary)" }}>{item.title}</h3>
-                  <p className="text-xs m-0 mt-0.5" style={{ color: "var(--text-faint)" }}>{item.desc}</p>
-                </div>
-                <span
-                  className="text-sm transition-transform duration-200"
-                  style={{
-                    color: "var(--text-faint)",
-                    transform: expandedStep === item.step ? "rotate(180deg)" : "none",
-                  }}
-                >
-                  ▼
-                </span>
-              </button>
-              {expandedStep === item.step && (
-                <div className="px-4 py-3" style={{ background: "var(--overlay-bg)" }}>
-                  <p className="text-xs m-0" style={{ color: "var(--text-muted)" }}>
-                    💡 {item.detail}
-                  </p>
-                </div>
-              )}
-            </div>
-          ))}
+                <h3 className="text-sm font-bold mb-1" style={{ color: "var(--text-secondary)" }}>{item.title}</h3>
+                <p className="text-xs leading-relaxed m-0" style={{ color: "var(--text-faint)" }}>{item.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Pricing */}
