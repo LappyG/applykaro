@@ -65,6 +65,7 @@ export default function RootLayout({ children }) {
               }}>
                 Chrome Extension
               </a>
+              <ThemeSwitcher />
             </div>
           </nav>
           {children}
