@@ -512,19 +512,6 @@ document.getElementById("buy-pack").addEventListener("click", async () => {
   }, 300000);
 });
 
-
-        document.querySelector(".ak-payment-msg").textContent = "✓ Payment confirmed!";
-        setTimeout(() => {
-          paymentPending.style.display = "none";
-          buySection.style.display = "block";
-        }, 2000);
-      }
-    } catch {
-      // ignore poll errors
-    }
-  }, 2000);
-}
-
 // ══════════════════════════════════
 //  SETTINGS
 // ══════════════════════════════════
