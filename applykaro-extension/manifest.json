@@ -3,7 +3,7 @@
   "name": "ApplyKaro Autofill",
   "version": "1.0.0",
   "description": "AI-powered job application autofill. Fill any job form instantly, powered by Claude.",
-  "permissions": ["activeTab", "storage", "scripting"],
+  "permissions": ["activeTab", "storage", "scripting", "tabs"],
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {
@@ -40,5 +40,8 @@
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-  "host_permissions": ["https://applykaro-nine.vercel.app/*"]
+  "host_permissions": [
+    "https://applykaro-nine.vercel.app/*",
+    "https://gumroad.com/*"
+  ]
 }

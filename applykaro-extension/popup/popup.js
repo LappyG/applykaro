@@ -503,93 +503,15 @@ document.getElementById("buy-pack").addEventListener("click", async () => {
     } catch { /* ignore */ }
   }, 3000);
 
-  // Stop polling after 10 minutes
+  // Stop polling after 5 minutes
   setTimeout(() => {
     clearInterval(poll);
     if (paymentPending.style.display !== "none") {
       document.querySelector(".ak-payment-msg").textContent = "Payment not detected yet. Reload extension after paying.";
     }
-  }, 600000);
-
-  if (false) { // keep old code structure
-    const res = await fetch(`${API_BASE}/api/payment/create`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: akUserId }),
-    });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || "Payment failed");
-    }
-
-    const data = await res.json();
-
-    // Show Lightning invoice
-    document.getElementById("ln-invoice-display").textContent = data.lnInvoice;
-
-    // Copy button
-    document.getElementById("copy-ln").addEventListener("click", () => {
-      navigator.clipboard.writeText(data.lnInvoice);
-      document.getElementById("copy-ln").textContent = "Copied!";
-      setTimeout(() => {
-        document.getElementById("copy-ln").textContent = "Copy Lightning Invoice";
-      }, 2000);
-    });
-
-    // Countdown timer (30s quote expiry)
-    let timeLeft = 30;
-    const timerEl = document.getElementById("pay-timer");
-    const countdown = setInterval(() => {
-      timeLeft--;
-      timerEl.textContent = timeLeft;
-      if (timeLeft <= 0) clearInterval(countdown);
-    }, 1000);
-
-    // Poll for payment completion
-    pollPayment(data.invoiceId, countdown);
-  } catch (err) {
-    document.querySelector(".ak-payment-msg").textContent = err.message;
-    setTimeout(() => {
-      paymentPending.style.display = "none";
-      buySection.style.display = "block";
-    }, 3000);
-  }
+  }, 300000);
 });
 
-async function pollPayment(invoiceId, countdownInterval) {
-  const { akUserId } = await chrome.storage.local.get("akUserId");
-  let attempts = 0;
-
-  const poll = setInterval(async () => {
-    attempts++;
-    if (attempts > 60) {
-      // 2 minutes max
-      clearInterval(poll);
-      clearInterval(countdownInterval);
-      document.querySelector(".ak-payment-msg").textContent = "Payment timed out";
-      setTimeout(() => {
-        paymentPending.style.display = "none";
-        buySection.style.display = "block";
-      }, 2000);
-      return;
-    }
-
-    try {
-      const res = await fetch(`${API_BASE}/api/credits`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: akUserId }),
-      });
-      const data = await res.json();
-
-      // Credits went up = payment confirmed
-      const { akCredits } = await chrome.storage.local.get("akCredits");
-      if (data.credits > (akCredits || 3)) {
-        clearInterval(poll);
-        clearInterval(countdownInterval);
-        updateCreditsUI(data.credits);
-        chrome.storage.local.set({ akCredits: data.credits });
 
         document.querySelector(".ak-payment-msg").textContent = "✓ Payment confirmed!";
         setTimeout(() => {
@@ -659,11 +581,9 @@ document.getElementById("save-settings-btn").addEventListener("click", () => {
 
 function generateUserId() {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-  let id = "ak_";
-  for (let i = 0; i < 16; i++) {
-    id += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return id;
+  const arr = new Uint8Array(16);
+  crypto.getRandomValues(arr);
+  return "ak_" + Array.from(arr).map(b => chars[b % chars.length]).join("");
 }
 
 // ══════════════════════════════════
