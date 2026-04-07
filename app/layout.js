@@ -36,7 +36,38 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <ThemeProvider>
-          <ThemeSwitcher />
+          <nav style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "14px 24px",
+            borderBottom: "1px solid var(--card-border)",
+            background: "var(--bg-primary)",
+            position: "sticky",
+            top: 0,
+            zIndex: 100,
+          }}>
+            <a href="/" style={{ fontWeight: 800, fontSize: "18px", color: "var(--text-secondary)", textDecoration: "none", letterSpacing: "-0.5px" }}>
+              ⚡ ApplyKaro
+            </a>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <a href="/" style={{ fontSize: "13px", color: "var(--text-muted)", textDecoration: "none", padding: "6px 12px", borderRadius: "8px" }}>
+                ATS Scorer
+              </a>
+              <a href="/extension" style={{
+                fontSize: "13px",
+                fontWeight: 700,
+                color: "#fff",
+                textDecoration: "none",
+                padding: "7px 16px",
+                borderRadius: "10px",
+                background: "linear-gradient(135deg, var(--accent-secondary), var(--accent))",
+              }}>
+                Chrome Extension
+              </a>
+              <ThemeSwitcher />
+            </div>
+          </nav>
           {children}
         </ThemeProvider>
       </body>
