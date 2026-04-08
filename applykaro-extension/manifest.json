@@ -3,7 +3,7 @@
   "name": "ApplyKaro Autofill",
   "version": "1.0.0",
   "description": "AI-powered job application autofill. Fill any job form instantly, powered by Claude.",
-  "permissions": ["activeTab", "storage", "scripting", "tabs"],
+  "permissions": ["activeTab", "storage", "tabs"],
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {
