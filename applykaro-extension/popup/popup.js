@@ -144,14 +144,16 @@ document.querySelectorAll(".ak-tab").forEach((tab) => {
   });
 });
 
+// ── Shared helpers ──
+const safeVal = (v) => (v || "").replace(/"/g, "&quot;");
+const safeText = (v) => (v || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
 // ── Education entries ──
 function addEduEntry(data = {}) {
   const id = eduCount++;
   const div = document.createElement("div");
   div.className = "ak-entry";
   div.dataset.eduId = id;
-
-  const safeVal = (v) => (v || "").replace(/"/g, "&quot;");
 
   div.innerHTML = `
     <button class="ak-remove-btn" data-remove-edu="${id}">&times;</button>
@@ -192,9 +194,6 @@ function addExpEntry(data = {}) {
   const div = document.createElement("div");
   div.className = "ak-entry";
   div.dataset.expId = id;
-
-  const safeVal = (v) => (v || "").replace(/"/g, "&quot;");
-  const safeText = (v) => (v || "").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
   div.innerHTML = `
     <button class="ak-remove-btn" data-remove-exp="${id}">&times;</button>
@@ -480,17 +479,23 @@ document.getElementById("buy-pack").addEventListener("click", async () => {
   paymentPending.style.display = "block";
   document.querySelector(".ak-payment-msg").textContent = "Waiting for payment...";
 
-  // Poll credits every 3s — will update once Gumroad webhook fires
+  // Snapshot credits before payment so we can detect an increase
+  const { akCredits: creditsBefore } = await chrome.storage.local.get("akCredits");
+  const baseCredits = creditsBefore || 0;
+  let pollStopped = false;
+
+  // Poll credits every 3s — updates once Gumroad webhook fires
   const poll = setInterval(async () => {
+    if (pollStopped) return;
     try {
-      const { akCredits } = await chrome.storage.local.get("akCredits");
       const res = await fetch(`${API_BASE}/api/credits`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: akUserId }),
       });
       const data = await res.json();
-      if (data.credits > (akCredits || 3)) {
+      if (typeof data.credits === "number" && data.credits > baseCredits) {
+        pollStopped = true;
         clearInterval(poll);
         updateCreditsUI(data.credits);
         chrome.storage.local.set({ akCredits: data.credits });
@@ -500,11 +505,13 @@ document.getElementById("buy-pack").addEventListener("click", async () => {
           buySection.style.display = "block";
         }, 2000);
       }
-    } catch { /* ignore */ }
+    } catch { /* ignore network errors */ }
   }, 3000);
 
   // Stop polling after 5 minutes
   setTimeout(() => {
+    if (pollStopped) return;
+    pollStopped = true;
     clearInterval(poll);
     if (paymentPending.style.display !== "none") {
       document.querySelector(".ak-payment-msg").textContent = "Payment not detected yet. Reload extension after paying.";

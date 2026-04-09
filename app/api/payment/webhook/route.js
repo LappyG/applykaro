@@ -36,26 +36,25 @@ export async function POST(request) {
       return NextResponse.json({ ok: true });
     }
 
-    // Get userId from custom fields (we'll pass it when redirecting to Gumroad)
-    // Gumroad custom fields come as: custom_fields[Field Name]
-    let userId = data["custom_fields[User ID]"] ||
-                 data["custom_fields[userId]"] ||
-                 data.buyer_id ||
-                 email; // fallback to email as userId
+    // Get userId from custom fields (we embed it in Gumroad checkout URL)
+    const userId = data["custom_fields[userId]"] || data["custom_fields[User ID]"];
 
     if (!userId) {
-      console.error("No userId in ping, using email:", email);
-      userId = email;
-    }
-
-    if (!userId) {
-      console.error("Cannot identify user from ping");
+      console.error("No userId in ping — cannot identify user");
       return NextResponse.json({ error: "Cannot identify user" }, { status: 400 });
     }
 
-    // Prevent duplicate processing
-    // (Gumroad may retry — sale_id is idempotent key)
     const amount = price ? (parseInt(price) / 100).toFixed(2) : "0.99";
+
+    // Idempotency check — prevent duplicate credits if Gumroad retries
+    const { kv: kvModule } = await import("@vercel/kv").catch(() => ({ kv: null }));
+    if (kvModule) {
+      const already = await kvModule.get(`invoice:${saleId}`).catch(() => null);
+      if (already) {
+        console.log(`Duplicate ping for saleId=${saleId} — skipping`);
+        return NextResponse.json({ ok: true, duplicate: true });
+      }
+    }
 
     // Record payment and add credits
     await recordPayment(userId, saleId, amount, data.currency || "USD");
