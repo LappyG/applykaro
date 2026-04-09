@@ -77,7 +77,7 @@ export async function POST(request) {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-3-5-sonnet-20241022",
+        model: "claude-sonnet-4-6",
         max_tokens: 2048,
         system: SYSTEM_PROMPT,
         messages: [
@@ -85,7 +85,6 @@ export async function POST(request) {
             role: "user",
             content: `Parse this resume and extract structured data:\n\n${resumeText.substring(0, 6000)}`,
           },
-          { role: "assistant", content: "{" },
         ],
       }),
     });
@@ -106,8 +105,7 @@ export async function POST(request) {
       .join("")
       .trim();
 
-    let jsonStr = "{" + rawText;
-    jsonStr = jsonStr.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+    let jsonStr = rawText.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
 
     const firstBrace = jsonStr.indexOf("{");
     const lastBrace = jsonStr.lastIndexOf("}");

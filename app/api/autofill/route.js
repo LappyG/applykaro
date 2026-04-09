@@ -94,12 +94,11 @@ Map the profile data to these form fields. Return the mapping as JSON.`;
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-3-5-sonnet-20241022",
+        model: "claude-sonnet-4-6",
         max_tokens: 2048,
         system: systemPrompt,
         messages: [
           { role: "user", content: userMessage },
-          { role: "assistant", content: "{" },
         ],
       }),
     });
@@ -136,8 +135,7 @@ Map the profile data to these form fields. Return the mapping as JSON.`;
       .join("")
       .trim();
 
-    let jsonStr = "{" + rawText;
-    jsonStr = jsonStr.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
+    let jsonStr = rawText.replace(/```json\s*/g, "").replace(/```\s*/g, "").trim();
 
     const firstBrace = jsonStr.indexOf("{");
     const lastBrace = jsonStr.lastIndexOf("}");
