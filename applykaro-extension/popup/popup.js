@@ -736,26 +736,117 @@ function buildAppItem(app) {
   return item;
 }
 
+let appFilter = { query: "", status: null };
+
+function appMatchesFilter(app) {
+  if (appFilter.status && (app.status || "Applied") !== appFilter.status) return false;
+  if (appFilter.query) {
+    const q = appFilter.query.toLowerCase();
+    const hay = `${app.company || ""} ${app.title || ""} ${app.host || ""}`.toLowerCase();
+    if (!hay.includes(q)) return false;
+  }
+  return true;
+}
+
+function showAppsEmpty(icon, text) {
+  const empty = document.createElement("div");
+  empty.className = "ak-apps-empty";
+  const ic = document.createElement("div");
+  ic.className = "ak-apps-empty-icon";
+  ic.textContent = icon;
+  const line = document.createElement("div");
+  line.textContent = text;
+  empty.appendChild(ic);
+  empty.appendChild(line);
+  applicationsList.appendChild(empty);
+}
+
+function renderFilterChips(apps) {
+  const filtersEl = document.getElementById("app-filters");
+  filtersEl.textContent = "";
+  const counts = { All: apps.length };
+  APP_STATUSES.forEach((s) => (counts[s] = 0));
+  apps.forEach((a) => {
+    const s = a.status || "Applied";
+    counts[s] = (counts[s] || 0) + 1;
+  });
+
+  ["All", ...APP_STATUSES].forEach((label) => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "ak-app-chip";
+    const isActive = (label === "All" && !appFilter.status) || label === appFilter.status;
+    if (isActive) chip.classList.add("active");
+    chip.textContent = `${label} ${counts[label] || 0}`;
+    chip.addEventListener("click", () => {
+      appFilter.status = label === "All" ? null : label;
+      renderApplications();
+    });
+    filtersEl.appendChild(chip);
+  });
+}
+
 async function renderApplications() {
   const apps = await getApplications();
   applicationsList.textContent = "";
 
-  if (apps.length === 0) {
-    const empty = document.createElement("div");
-    empty.className = "ak-apps-empty";
-    const icon = document.createElement("div");
-    icon.className = "ak-apps-empty-icon";
-    icon.textContent = "📭";
-    const line = document.createElement("div");
-    line.textContent = "No applications yet. Autofill a job form and it'll show up here.";
-    empty.appendChild(icon);
-    empty.appendChild(line);
-    applicationsList.appendChild(empty);
+  const hasAny = apps.length > 0;
+  document.getElementById("app-controls").style.display = hasAny ? "flex" : "none";
+  document.getElementById("app-filters").style.display = hasAny ? "flex" : "none";
+
+  if (!hasAny) {
+    showAppsEmpty("📭", "No applications yet. Autofill a job form and it'll show up here.");
     return;
   }
 
-  apps.forEach((app) => applicationsList.appendChild(buildAppItem(app)));
+  renderFilterChips(apps);
+
+  const filtered = apps.filter(appMatchesFilter);
+  if (filtered.length === 0) {
+    showAppsEmpty("🔍", "No applications match your search or filter.");
+    return;
+  }
+
+  filtered.forEach((app) => applicationsList.appendChild(buildAppItem(app)));
 }
+
+// ── CSV export ──
+function applicationsToCsv(apps) {
+  const header = ["Company", "Role", "Status", "Date", "URL"];
+  const esc = (v) => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
+  const rows = apps.map((a) => [
+    a.company || a.host || "",
+    a.title || "",
+    a.status || "Applied",
+    a.date ? new Date(a.date).toISOString().slice(0, 10) : "",
+    a.url || "",
+  ]);
+  return [header, ...rows].map((r) => r.map(esc).join(",")).join("\r\n");
+}
+
+function exportApplicationsCsv(apps) {
+  if (!apps.length) return;
+  const blob = new Blob([applicationsToCsv(apps)], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `applykaro-applications-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+document.getElementById("app-search").addEventListener("input", (e) => {
+  appFilter.query = e.target.value;
+  renderApplications();
+});
+
+document.getElementById("app-export").addEventListener("click", async () => {
+  const apps = await getApplications();
+  const visible = apps.filter(appMatchesFilter);
+  exportApplicationsCsv(visible.length ? visible : apps);
+});
 
 document.getElementById("applications-btn").addEventListener("click", () => {
   profileComplete.style.display = "none";
