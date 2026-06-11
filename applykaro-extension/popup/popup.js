@@ -451,6 +451,7 @@ document.getElementById("save-btn").addEventListener("click", () => {
 document.getElementById("edit-profile-btn").addEventListener("click", () => {
   profileComplete.style.display = "none";
   document.getElementById("settings-panel").style.display = "none";
+  document.getElementById("applications-panel").style.display = "none";
   profileForm.style.display = "block";
 });
 
@@ -606,6 +607,160 @@ document.getElementById("save-settings-btn").addEventListener("click", () => {
 });
 
 // ══════════════════════════════════
+//  APPLICATIONS TRACKER
+// ══════════════════════════════════
+
+const APP_STATUSES = ["Applied", "Interview", "Offer", "Rejected"];
+const applicationsPanel = document.getElementById("applications-panel");
+const applicationsList = document.getElementById("applications-list");
+const appCountEl = document.getElementById("app-count");
+
+function statusClass(status) {
+  return "is-" + String(status || "Applied").toLowerCase();
+}
+
+function relativeDate(iso) {
+  const then = new Date(iso).getTime();
+  if (!then) return "";
+  const diff = Date.now() - then;
+  const hour = 3600000;
+  const day = 86400000;
+  if (diff < hour) return "Just now";
+  if (diff < day) return Math.floor(diff / hour) + "h ago";
+  if (diff < 7 * day) return Math.floor(diff / day) + "d ago";
+  return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+async function getApplications() {
+  const { akApplications } = await chrome.storage.local.get("akApplications");
+  return Array.isArray(akApplications) ? akApplications : [];
+}
+
+async function updateAppCount() {
+  const apps = await getApplications();
+  appCountEl.textContent = apps.length ? String(apps.length) : "";
+}
+
+async function saveApplications(list) {
+  await chrome.storage.local.set({ akApplications: list });
+  await updateAppCount();
+}
+
+async function updateStatus(id, status) {
+  const apps = await getApplications();
+  await saveApplications(apps.map((a) => (a.id === id ? { ...a, status } : a)));
+  renderApplications();
+}
+
+async function removeApplication(id) {
+  const apps = await getApplications();
+  await saveApplications(apps.filter((a) => a.id !== id));
+  renderApplications();
+}
+
+// Build a card with createElement/textContent — scraped company/title/url are untrusted.
+function buildAppItem(app) {
+  const item = document.createElement("div");
+  item.className = "ak-app-item";
+
+  const top = document.createElement("div");
+  top.className = "ak-app-top";
+
+  const info = document.createElement("div");
+  info.style.minWidth = "0";
+  const company = document.createElement("div");
+  company.className = "ak-app-company";
+  company.textContent = app.company || app.host || "Unknown";
+  info.appendChild(company);
+  if (app.title) {
+    const role = document.createElement("div");
+    role.className = "ak-app-role";
+    role.textContent = app.title;
+    info.appendChild(role);
+  }
+
+  const del = document.createElement("button");
+  del.className = "ak-app-del";
+  del.type = "button";
+  del.textContent = "×";
+  del.title = "Remove";
+  del.addEventListener("click", () => removeApplication(app.id));
+
+  top.appendChild(info);
+  top.appendChild(del);
+
+  const meta = document.createElement("div");
+  meta.className = "ak-app-meta";
+
+  const status = document.createElement("select");
+  status.className = "ak-app-status " + statusClass(app.status);
+  APP_STATUSES.forEach((s) => {
+    const opt = document.createElement("option");
+    opt.value = s;
+    opt.textContent = s;
+    if (s === (app.status || "Applied")) opt.selected = true;
+    status.appendChild(opt);
+  });
+  status.addEventListener("change", () => updateStatus(app.id, status.value));
+
+  const date = document.createElement("span");
+  date.className = "ak-app-date";
+  date.textContent = relativeDate(app.date);
+
+  meta.appendChild(status);
+  meta.appendChild(date);
+
+  // Only render a link for real http(s) URLs (block javascript:, data:, etc.)
+  if (typeof app.url === "string" && /^https?:\/\//i.test(app.url)) {
+    const link = document.createElement("a");
+    link.className = "ak-app-link";
+    link.href = app.url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = "Open ↗";
+    meta.appendChild(link);
+  }
+
+  item.appendChild(top);
+  item.appendChild(meta);
+  return item;
+}
+
+async function renderApplications() {
+  const apps = await getApplications();
+  applicationsList.textContent = "";
+
+  if (apps.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "ak-apps-empty";
+    const icon = document.createElement("div");
+    icon.className = "ak-apps-empty-icon";
+    icon.textContent = "📭";
+    const line = document.createElement("div");
+    line.textContent = "No applications yet. Autofill a job form and it'll show up here.";
+    empty.appendChild(icon);
+    empty.appendChild(line);
+    applicationsList.appendChild(empty);
+    return;
+  }
+
+  apps.forEach((app) => applicationsList.appendChild(buildAppItem(app)));
+}
+
+document.getElementById("applications-btn").addEventListener("click", () => {
+  profileComplete.style.display = "none";
+  profileForm.style.display = "none";
+  settingsPanel.style.display = "none";
+  applicationsPanel.style.display = "block";
+  renderApplications();
+});
+
+document.getElementById("back-from-applications").addEventListener("click", () => {
+  applicationsPanel.style.display = "none";
+  profileComplete.style.display = "block";
+});
+
+// ══════════════════════════════════
 //  USER ID
 // ══════════════════════════════════
 
@@ -648,6 +803,7 @@ chrome.storage.local.get(["akProfile", "akUserId", "akSettings", "akCredits"], (
     document.getElementById("done-sub").textContent = `${filled + 2} fields filled — ready to autofill`;
 
     updateCompleteness();
+    updateAppCount();
 
     // Load credits
     if (data.akSettings?.useOwnKey && data.akSettings?.ownApiKey) {

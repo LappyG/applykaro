@@ -81,6 +81,9 @@
           <button class="ak-edit-btn ak-settings-btn" id="settings-btn">Settings</button>
         </div>
 
+        <!-- Applications tracker entry -->
+        <button class="ak-edit-btn ak-apps-btn" id="applications-btn">📋 My Applications<span id="app-count"></span></button>
+
         <!-- Buy credits -->
         <div class="ak-buy-section" id="buy-section">
           <div class="ak-buy-card" id="buy-pack">
@@ -138,6 +141,19 @@
           <button class="ak-save" id="save-settings-btn" style="font-size:13px;padding:10px">Save Settings</button>
           <button class="ak-edit-btn" id="back-from-settings" style="margin-top:8px;width:100%">Back to Profile</button>
         </div>
+      </div>
+
+      <!-- Applications panel -->
+      <div id="applications-panel" style="display:none">
+        <div class="ak-step-header">
+          <div class="ak-step-num" style="font-size:16px">📋</div>
+          <div>
+            <div class="ak-step-title">My Applications</div>
+            <div class="ak-step-desc">Auto-logged each time you autofill a form</div>
+          </div>
+        </div>
+        <div id="applications-list"></div>
+        <button class="ak-edit-btn" id="back-from-applications" style="width:100%;margin-top:14px">Back to Profile</button>
       </div>
 
       <!-- Editable form -->

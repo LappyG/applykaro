@@ -244,6 +244,15 @@
 
     // 5. Show results
     showResults(results);
+
+    // 6. Log this application locally (fire-and-forget) if we filled anything
+    try {
+      if (window.__akLogApplication && results.filled.length > 0) {
+        window.__akLogApplication();
+      }
+    } catch (e) {
+      console.warn("[ApplyKaro] could not log application", e);
+    }
   }
 
   // ── Listen for detection event ──
