@@ -167,4 +167,7 @@
 
     return fields;
   };
+
+  // Exposed for the answer generator so it can label open-ended questions.
+  window.__akGetLabel = getLabelText;
 })();

@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "ApplyKaro Autofill",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "AI-powered job application autofill. Fill any job form instantly, powered by Claude.",
-  "permissions": ["activeTab", "storage", "tabs"],
+  "permissions": ["storage"],
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {
@@ -22,6 +22,8 @@
         "content/detector.js",
         "content/extractor.js",
         "content/filler.js",
+        "content/jd-scraper.js",
+        "content/answer-gen.js",
         "content/ui.js"
       ],
       "css": ["content/content.css"],

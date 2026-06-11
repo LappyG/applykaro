@@ -217,4 +217,12 @@
 
     return results;
   };
+
+  // Exposed for the answer generator — fill a single element React/Angular-safely.
+  window.__akSetFieldValue = function (el, value) {
+    if (!el) return;
+    el.focus();
+    setNativeValue(el, value);
+    dispatchEvents(el);
+  };
 })();
