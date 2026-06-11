@@ -1,22 +1,94 @@
+/* ===================================================================
+   ApplyKaro Autofill — Popup styles
+   Light theme · Indigo (#4f46e5) primary · Emerald (#10b981) accent
+   =================================================================== */
+
+:root {
+  color-scheme: light;
+  --ak-bg: #ffffff;
+  --ak-raised: #ffffff;
+  --ak-surface: #f8fafc;
+  --ak-surface-2: #f1f5f9;
+  --ak-border: #e5e7eb;
+  --ak-border-strong: #d1d5db;
+
+  --ak-text: #111827;
+  --ak-text-2: #6b7280;
+  --ak-text-3: #9ca3af;
+
+  --ak-indigo: #4f46e5;
+  --ak-indigo-600: #4338ca;
+  --ak-indigo-bg: rgba(79, 70, 229, 0.08);
+  --ak-indigo-bg-2: rgba(79, 70, 229, 0.14);
+
+  --ak-emerald: #10b981;
+  --ak-emerald-bg: rgba(16, 185, 129, 0.1);
+
+  --ak-amber: #f59e0b;
+  --ak-red: #ef4444;
+
+  --ak-grad: linear-gradient(135deg, #4f46e5, #6366f1);
+  --ak-grad-brand: linear-gradient(135deg, #4f46e5, #10b981);
+  --ak-shadow: 0 4px 16px rgba(79, 70, 229, 0.18);
+}
+
+/* ── Dark theme ── */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ak-bg: #0b0f17;
+  --ak-raised: #2a3446;
+  --ak-surface: #141a24;
+  --ak-surface-2: #1c2430;
+  --ak-border: #283142;
+  --ak-border-strong: #3a4560;
+
+  --ak-text: #e5e7eb;
+  --ak-text-2: #9aa4b5;
+  --ak-text-3: #6b7585;
+
+  --ak-indigo: #818cf8;
+  --ak-indigo-600: #6366f1;
+  --ak-indigo-bg: rgba(129, 140, 248, 0.14);
+  --ak-indigo-bg-2: rgba(129, 140, 248, 0.26);
+
+  --ak-emerald: #34d399;
+  --ak-emerald-bg: rgba(52, 211, 153, 0.14);
+
+  --ak-amber: #fbbf24;
+  --ak-red: #f87171;
+
+  --ak-grad: linear-gradient(135deg, #6366f1, #818cf8);
+  --ak-grad-brand: linear-gradient(135deg, #818cf8, #34d399);
+  --ak-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+/* Dark overrides for the few non-variable colors */
+:root[data-theme="dark"] .ak-done-title { color: #34d399; }
+:root[data-theme="dark"] .ak-completeness.partial { color: #fbbf24; background: rgba(245, 158, 11, 0.16); }
+:root[data-theme="dark"] .ak-field select option { background: #141a24; color: var(--ak-text); }
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html { background: var(--ak-bg); }
+
 body {
   width: 400px;
   max-height: 560px;
   overflow-y: auto;
-  background: #08080d;
-  color: #e2e2e8;
+  background: var(--ak-bg);
+  color: var(--ak-text);
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   font-size: 13px;
 }
 
-body::-webkit-scrollbar { width: 4px; }
+body::-webkit-scrollbar { width: 6px; }
 body::-webkit-scrollbar-track { background: transparent; }
-body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radius: 4px; }
+body::-webkit-scrollbar-thumb { background: var(--ak-border-strong); border-radius: 4px; }
+body::-webkit-scrollbar-thumb:hover { background: var(--ak-text-3); }
 
 .ak-popup { padding: 16px; }
 
@@ -25,7 +97,7 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .ak-logo { display: flex; align-items: center; gap: 8px; }
@@ -33,8 +105,9 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
 .ak-logo-text {
   font-size: 16px;
   font-weight: 800;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
+  background: var(--ak-grad-brand);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -47,21 +120,42 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   letter-spacing: 0.08em;
   padding: 3px 8px;
   border-radius: 6px;
-  background: rgba(168, 85, 247, 0.15);
-  color: #a855f7;
-  border: 1px solid rgba(168, 85, 247, 0.2);
+  background: var(--ak-indigo-bg);
+  color: var(--ak-indigo);
+  border: 1px solid var(--ak-indigo-bg-2);
 }
 
 .ak-completeness {
   font-size: 11px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--ak-text-3);
   padding: 3px 8px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--ak-surface-2);
 }
-.ak-completeness.good { color: #4ade80; background: rgba(34, 197, 94, 0.1); }
-.ak-completeness.partial { color: #facc15; background: rgba(234, 179, 8, 0.08); }
+.ak-completeness.good { color: var(--ak-emerald); background: var(--ak-emerald-bg); }
+.ak-completeness.partial { color: #b45309; background: rgba(245, 158, 11, 0.12); }
+
+.ak-theme-toggle {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--ak-border);
+  background: var(--ak-surface-2);
+  color: var(--ak-text-2);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.ak-theme-toggle:hover {
+  background: var(--ak-surface);
+  border-color: var(--ak-border-strong);
+  color: var(--ak-text);
+}
 
 /* ── Steps ── */
 .ak-step-header {
@@ -75,7 +169,7 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   width: 32px;
   height: 32px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
+  background: var(--ak-grad);
   color: #fff;
   font-size: 14px;
   font-weight: 800;
@@ -83,54 +177,55 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: var(--ak-shadow);
 }
 
 .ak-step-title {
   font-size: 14px;
   font-weight: 700;
-  color: #e2e2e8;
+  color: var(--ak-text);
 }
 
 .ak-step-desc {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--ak-text-2);
   margin-top: 2px;
 }
 
 /* ── Upload Zone ── */
 .ak-upload-zone {
-  border: 2px dashed rgba(168, 85, 247, 0.25);
+  border: 2px dashed var(--ak-border-strong);
   border-radius: 14px;
   padding: 32px 20px;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
-  background: rgba(168, 85, 247, 0.02);
+  background: var(--ak-surface);
 }
 .ak-upload-zone:hover,
 .ak-upload-zone.dragover {
-  border-color: #a855f7;
-  background: rgba(168, 85, 247, 0.06);
+  border-color: var(--ak-indigo);
+  background: var(--ak-indigo-bg);
 }
 
 .ak-upload-icon { font-size: 32px; margin-bottom: 10px; }
-.ak-upload-text { font-size: 14px; font-weight: 600; color: rgba(255, 255, 255, 0.6); }
-.ak-upload-sub { font-size: 12px; color: rgba(255, 255, 255, 0.25); margin-top: 6px; }
-.ak-upload-browse { color: #a855f7; font-weight: 600; cursor: pointer; }
+.ak-upload-text { font-size: 14px; font-weight: 600; color: var(--ak-text); }
+.ak-upload-sub { font-size: 12px; color: var(--ak-text-3); margin-top: 6px; }
+.ak-upload-browse { color: var(--ak-indigo); font-weight: 600; cursor: pointer; }
 
 .ak-upload-status {
   text-align: center;
   padding: 20px;
   border-radius: 14px;
-  background: rgba(168, 85, 247, 0.04);
-  border: 1px solid rgba(168, 85, 247, 0.1);
+  background: var(--ak-indigo-bg);
+  border: 1px solid var(--ak-indigo-bg-2);
 }
 
 .ak-upload-spinner {
   width: 28px;
   height: 28px;
-  border: 3px solid rgba(168, 85, 247, 0.15);
-  border-top-color: #a855f7;
+  border: 3px solid var(--ak-indigo-bg-2);
+  border-top-color: var(--ak-indigo);
   border-radius: 50%;
   animation: ak-spin 0.8s linear infinite;
   margin: 0 auto 10px;
@@ -139,10 +234,10 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
 .ak-upload-msg {
   font-size: 13px;
   font-weight: 600;
-  color: #a855f7;
+  color: var(--ak-indigo);
 }
-.ak-upload-msg.error { color: #f87171; }
-.ak-upload-msg.success { color: #4ade80; }
+.ak-upload-msg.error { color: var(--ak-red); }
+.ak-upload-msg.success { color: var(--ak-emerald); }
 
 @keyframes ak-spin { to { transform: rotate(360deg); } }
 
@@ -152,7 +247,7 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   align-items: center;
   gap: 12px;
   margin: 16px 0;
-  color: rgba(255, 255, 255, 0.15);
+  color: var(--ak-text-3);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -162,16 +257,16 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   content: '';
   flex: 1;
   height: 1px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--ak-border);
 }
 
 .ak-skip-btn {
   width: 100%;
-  padding: 10px;
+  padding: 11px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: transparent;
-  color: rgba(255, 255, 255, 0.4);
+  border: 1px solid var(--ak-border);
+  background: var(--ak-bg);
+  color: var(--ak-text-2);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -179,8 +274,9 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   font-family: inherit;
 }
 .ak-skip-btn:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.6);
+  background: var(--ak-surface-2);
+  color: var(--ak-text);
+  border-color: var(--ak-border-strong);
 }
 
 /* ── Profile Complete State ── */
@@ -188,43 +284,44 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   text-align: center;
   padding: 24px 16px;
   border-radius: 14px;
-  background: rgba(34, 197, 94, 0.04);
-  border: 1px solid rgba(34, 197, 94, 0.12);
+  background: var(--ak-emerald-bg);
+  border: 1px solid rgba(16, 185, 129, 0.22);
 }
 
 .ak-done-icon {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: rgba(34, 197, 94, 0.12);
-  color: #4ade80;
+  background: var(--ak-emerald);
+  color: #fff;
   font-size: 24px;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 10px;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
 }
 
 .ak-done-title {
   font-size: 16px;
   font-weight: 700;
-  color: #4ade80;
+  color: #047857;
   margin-bottom: 4px;
 }
 
 .ak-done-sub {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--ak-text-2);
   margin-bottom: 14px;
 }
 
 .ak-edit-btn {
-  padding: 8px 24px;
+  padding: 9px 24px;
   border-radius: 10px;
-  border: 1px solid rgba(168, 85, 247, 0.25);
-  background: rgba(168, 85, 247, 0.08);
-  color: #c084fc;
+  border: 1px solid var(--ak-indigo-bg-2);
+  background: var(--ak-indigo-bg);
+  color: var(--ak-indigo);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -232,16 +329,16 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   font-family: inherit;
 }
 .ak-edit-btn:hover {
-  background: rgba(168, 85, 247, 0.15);
-  border-color: rgba(168, 85, 247, 0.4);
+  background: var(--ak-indigo-bg-2);
+  border-color: var(--ak-indigo);
 }
 
 /* ── Extras label ── */
 .ak-extras-label {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  color: var(--ak-text-2);
+  background: var(--ak-surface-2);
+  border: 1px solid var(--ak-border);
   padding: 8px 12px;
   border-radius: 8px;
   margin-bottom: 12px;
@@ -252,7 +349,7 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
 .ak-tabs {
   display: flex;
   gap: 2px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--ak-surface-2);
   border-radius: 10px;
   padding: 3px;
   margin-bottom: 14px;
@@ -264,15 +361,19 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   border: none;
   border-radius: 8px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--ak-text-2);
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   font-family: inherit;
 }
-.ak-tab:hover { color: rgba(255, 255, 255, 0.6); }
-.ak-tab.active { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+.ak-tab:hover { color: var(--ak-text); }
+.ak-tab.active {
+  background: var(--ak-raised);
+  color: var(--ak-indigo);
+  box-shadow: 0 1px 3px rgba(17, 24, 39, 0.08);
+}
 .ak-tab.has-data { position: relative; }
 .ak-tab.has-data::after {
   content: '';
@@ -282,7 +383,7 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: #4ade80;
+  background: var(--ak-emerald);
 }
 
 /* ── Panels ── */
@@ -296,36 +397,37 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   display: block;
   font-size: 11px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.45);
+  color: var(--ak-text-2);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 4px;
+  letter-spacing: 0.04em;
+  margin-bottom: 5px;
 }
 
 .ak-field input,
 .ak-field textarea,
 .ak-field select {
   width: 100%;
-  padding: 9px 12px;
+  padding: 10px 12px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
-  color: #e2e2e8;
+  border: 1px solid var(--ak-border);
+  background: var(--ak-bg);
+  color: var(--ak-text);
   font-size: 13px;
   font-family: inherit;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .ak-field input:focus,
 .ak-field textarea:focus,
 .ak-field select:focus {
-  border-color: rgba(168, 85, 247, 0.4);
+  border-color: var(--ak-indigo);
+  box-shadow: 0 0 0 3px var(--ak-indigo-bg);
 }
 
 .ak-field input::placeholder,
 .ak-field textarea::placeholder {
-  color: rgba(255, 255, 255, 0.18);
+  color: var(--ak-text-3);
 }
 
 .ak-field textarea { resize: vertical; }
@@ -334,26 +436,26 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   cursor: pointer;
   -webkit-appearance: none;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23666' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%239ca3af' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 32px;
 }
 
-.ak-field select option { background: #1a1a2e; color: #e2e2e8; }
+.ak-field select option { background: #ffffff; color: var(--ak-text); }
 
 /* AI pre-filled indicator */
 .ak-field input.ai-filled,
 .ak-field textarea.ai-filled,
 .ak-field select.ai-filled {
-  border-color: rgba(168, 85, 247, 0.25);
-  background: rgba(168, 85, 247, 0.04);
+  border-color: var(--ak-indigo-bg-2);
+  background: var(--ak-indigo-bg);
 }
 
 /* ── Entry cards (edu/exp) ── */
 .ak-entry {
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--ak-surface);
+  border: 1px solid var(--ak-border);
   border-radius: 12px;
   padding: 12px;
   margin-bottom: 10px;
@@ -370,8 +472,8 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   height: 22px;
   border-radius: 6px;
   border: none;
-  background: rgba(239, 68, 68, 0.12);
-  color: #f87171;
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--ak-red);
   font-size: 14px;
   cursor: pointer;
   display: flex;
@@ -380,15 +482,15 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   transition: background 0.2s;
   line-height: 1;
 }
-.ak-remove-btn:hover { background: rgba(239, 68, 68, 0.25); }
+.ak-remove-btn:hover { background: rgba(239, 68, 68, 0.2); }
 
 .ak-add-btn {
   width: 100%;
-  padding: 10px;
+  padding: 11px;
   border-radius: 10px;
-  border: 1px dashed rgba(168, 85, 247, 0.25);
-  background: transparent;
-  color: #a855f7;
+  border: 1px dashed var(--ak-border-strong);
+  background: var(--ak-bg);
+  color: var(--ak-indigo);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -396,15 +498,15 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   font-family: inherit;
 }
 .ak-add-btn:hover {
-  background: rgba(168, 85, 247, 0.06);
-  border-color: rgba(168, 85, 247, 0.4);
+  background: var(--ak-indigo-bg);
+  border-color: var(--ak-indigo);
 }
 
 /* ── Actions ── */
 .ak-actions {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid var(--ak-border);
 }
 
 .ak-save {
@@ -412,18 +514,18 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   padding: 12px;
   border: none;
   border-radius: 12px;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
+  background: var(--ak-grad);
   color: #fff;
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
   font-family: inherit;
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.25);
+  box-shadow: var(--ak-shadow);
 }
 .ak-save:hover {
   transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 6px 22px rgba(79, 70, 229, 0.3);
 }
 .ak-save:active { transform: translateY(0); }
 
@@ -435,8 +537,8 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   min-height: 18px;
   transition: opacity 0.3s;
 }
-.ak-status.success { color: #4ade80; }
-.ak-status.error { color: #f87171; }
+.ak-status.success { color: var(--ak-emerald); }
+.ak-status.error { color: var(--ak-red); }
 
 /* ── Row layout ── */
 .ak-row { display: flex; gap: 8px; }
@@ -445,10 +547,10 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
 /* ── Credits Box ── */
 .ak-credits-box {
   margin: 14px 0;
-  padding: 12px 16px;
+  padding: 14px 16px;
   border-radius: 12px;
-  background: rgba(99, 102, 241, 0.06);
-  border: 1px solid rgba(99, 102, 241, 0.12);
+  background: var(--ak-indigo-bg);
+  border: 1px solid var(--ak-indigo-bg-2);
 }
 
 .ak-credits-count {
@@ -461,50 +563,53 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
 #credit-num {
   font-size: 28px;
   font-weight: 800;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
+  background: var(--ak-grad-brand);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .ak-credits-label {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--ak-text-2);
   font-weight: 600;
 }
 
 .ak-credits-bar {
-  height: 4px;
+  height: 5px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--ak-border);
   overflow: hidden;
 }
 
 .ak-credits-fill {
   height: 100%;
   border-radius: 4px;
-  background: linear-gradient(90deg, #6366f1, #a855f7);
+  background: var(--ak-grad-brand);
   transition: width 0.5s ease;
 }
 
 .ak-credits-box.low #credit-num {
   background: linear-gradient(135deg, #f59e0b, #ef4444);
   -webkit-background-clip: text;
+  background-clip: text;
 }
 .ak-credits-box.low .ak-credits-fill {
   background: linear-gradient(90deg, #f59e0b, #ef4444);
 }
 .ak-credits-box.low {
-  border-color: rgba(245, 158, 11, 0.2);
-  background: rgba(245, 158, 11, 0.04);
+  border-color: rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.08);
 }
 
 .ak-credits-box.empty #credit-num {
   background: linear-gradient(135deg, #ef4444, #dc2626);
   -webkit-background-clip: text;
+  background-clip: text;
 }
 .ak-credits-box.empty {
-  border-color: rgba(239, 68, 68, 0.2);
-  background: rgba(239, 68, 68, 0.04);
+  border-color: rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.08);
 }
 
 /* ── Done actions ── */
@@ -516,13 +621,13 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
 .ak-done-actions .ak-edit-btn { flex: 1; }
 
 .ak-settings-btn {
-  border-color: rgba(255, 255, 255, 0.1) !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-  color: rgba(255, 255, 255, 0.5) !important;
+  border-color: var(--ak-border) !important;
+  background: var(--ak-bg) !important;
+  color: var(--ak-text-2) !important;
 }
 .ak-settings-btn:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
-  color: rgba(255, 255, 255, 0.7) !important;
+  background: var(--ak-surface-2) !important;
+  color: var(--ak-text) !important;
 }
 
 /* ── Buy Section ── */
@@ -531,34 +636,35 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
 .ak-buy-card {
   padding: 14px;
   border-radius: 12px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.08));
-  border: 1px solid rgba(168, 85, 247, 0.2);
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.06), rgba(16, 185, 129, 0.06));
+  border: 1px solid var(--ak-indigo-bg-2);
   cursor: pointer;
   transition: all 0.2s;
   text-align: center;
 }
 .ak-buy-card:hover {
-  border-color: rgba(168, 85, 247, 0.4);
+  border-color: var(--ak-indigo);
   transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 4px 18px rgba(79, 70, 229, 0.15);
 }
 
 .ak-buy-title {
   font-size: 14px;
   font-weight: 700;
-  color: #e2e2e8;
+  color: var(--ak-text);
 }
 .ak-buy-price {
   font-size: 22px;
   font-weight: 800;
-  background: linear-gradient(135deg, #6366f1, #a855f7);
+  background: var(--ak-grad-brand);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 4px 0;
 }
 .ak-buy-sub {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--ak-text-2);
 }
 
 /* ── Payment Pending ── */
@@ -567,24 +673,25 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   padding: 16px;
   margin-top: 10px;
   border-radius: 12px;
-  background: rgba(168, 85, 247, 0.04);
-  border: 1px solid rgba(168, 85, 247, 0.15);
+  background: var(--ak-indigo-bg);
+  border: 1px solid var(--ak-indigo-bg-2);
 }
 
 .ak-payment-msg {
   font-size: 13px;
   font-weight: 600;
-  color: #a855f7;
+  color: var(--ak-indigo);
   margin-bottom: 10px;
 }
 
 .ak-payment-ln {
   font-size: 9px;
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--ak-text-2);
   word-break: break-all;
   padding: 8px;
   border-radius: 8px;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--ak-surface-2);
+  border: 1px solid var(--ak-border);
   margin-bottom: 8px;
   max-height: 60px;
   overflow: hidden;
@@ -594,9 +701,9 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
 .ak-copy-btn {
   padding: 8px 20px;
   border-radius: 8px;
-  border: 1px solid rgba(168, 85, 247, 0.25);
-  background: rgba(168, 85, 247, 0.1);
-  color: #c084fc;
+  border: 1px solid var(--ak-indigo-bg-2);
+  background: var(--ak-indigo-bg);
+  color: var(--ak-indigo);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -604,21 +711,21 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   transition: all 0.2s;
 }
 .ak-copy-btn:hover {
-  background: rgba(168, 85, 247, 0.2);
+  background: var(--ak-indigo-bg-2);
 }
 
 .ak-payment-timer {
   margin-top: 8px;
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--ak-text-2);
 }
 
 /* ── Settings Panel ── */
 .ak-settings-card {
   padding: 14px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--ak-surface);
+  border: 1px solid var(--ak-border);
   margin-bottom: 10px;
 }
 
@@ -631,25 +738,25 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
 .ak-setting-title {
   font-size: 13px;
   font-weight: 700;
-  color: #e2e2e8;
+  color: var(--ak-text);
 }
 
 .ak-setting-desc {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--ak-text-2);
   margin-top: 4px;
 }
 
 .ak-setting-hint {
   font-size: 10px;
-  color: rgba(74, 222, 128, 0.6);
+  color: var(--ak-emerald);
   margin-top: 6px;
 }
 
 .ak-user-id {
   font-family: monospace;
   font-size: 10px !important;
-  color: rgba(255, 255, 255, 0.2) !important;
+  color: var(--ak-text-3) !important;
   user-select: all;
 }
 
@@ -666,7 +773,7 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   position: absolute;
   cursor: pointer;
   inset: 0;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--ak-border-strong);
   border-radius: 22px;
   transition: 0.3s;
 }
@@ -677,12 +784,13 @@ body::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.3); border-radi
   width: 16px;
   left: 3px;
   bottom: 3px;
-  background: #e2e2e8;
+  background: #ffffff;
   border-radius: 50%;
   transition: 0.3s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 .ak-toggle input:checked + .ak-toggle-slider {
-  background: linear-gradient(135deg, #6366f1, #a855f7);
+  background: var(--ak-indigo);
 }
 .ak-toggle input:checked + .ak-toggle-slider::before {
   transform: translateX(18px);

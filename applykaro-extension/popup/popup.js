@@ -17,6 +17,40 @@ const expContainer = document.getElementById("exp-entries");
 let eduCount = 0;
 let expCount = 0;
 
+// Accept PDF or DOCX resumes
+const isSupportedResume = (file) => {
+  const name = (file.name || "").toLowerCase();
+  return file.type === "application/pdf" || name.endsWith(".pdf") || name.endsWith(".docx");
+};
+
+// ══════════════════════════════════
+//  Theme toggle (light / dark)
+// ══════════════════════════════════
+const themeToggleBtn = document.getElementById("theme-toggle");
+
+function refreshThemeIcon() {
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  themeToggleBtn.textContent = isDark ? "☀️" : "🌙";
+  themeToggleBtn.title = isDark ? "Switch to light mode" : "Switch to dark mode";
+}
+
+themeToggleBtn.addEventListener("click", () => {
+  const isDark = document.documentElement.getAttribute("data-theme") === "dark";
+  if (isDark) {
+    document.documentElement.removeAttribute("data-theme");
+  } else {
+    document.documentElement.setAttribute("data-theme", "dark");
+  }
+  try {
+    localStorage.setItem("akTheme", isDark ? "light" : "dark");
+  } catch (e) {
+    /* localStorage unavailable — toggle still works for this session */
+  }
+  refreshThemeIcon();
+});
+
+refreshThemeIcon();
+
 // ══════════════════════════════════
 //  STEP 1: Resume Upload + Parse
 // ══════════════════════════════════
@@ -34,7 +68,7 @@ dropZone.addEventListener("drop", (e) => {
   e.preventDefault();
   dropZone.classList.remove("dragover");
   const file = e.dataTransfer.files[0];
-  if (file && file.type === "application/pdf") handleResumeFile(file);
+  if (file && isSupportedResume(file)) handleResumeFile(file);
 });
 
 fileInput.addEventListener("change", () => {
@@ -49,16 +83,18 @@ document.getElementById("skip-upload").addEventListener("click", () => {
 });
 
 async function handleResumeFile(file) {
+  const isDocx = (file.name || "").toLowerCase().endsWith(".docx");
+
   dropZone.style.display = "none";
   uploadStatus.style.display = "block";
-  uploadMsg.textContent = "Reading PDF...";
+  uploadMsg.textContent = isDocx ? "Reading DOCX..." : "Reading PDF...";
   uploadMsg.className = "ak-upload-msg";
 
   try {
-    // Extract text from PDF using bundled pdf.js
-    const text = await extractPdfText(file);
+    // Extract text — DOCX via native unzip, PDF via bundled pdf.js
+    const text = isDocx ? await extractDocxText(file) : await extractPdfText(file);
     if (text.trim().length < 50) {
-      throw new Error("Could not extract enough text from PDF. Try a different file.");
+      throw new Error("Could not extract enough text from the file. Try a different file.");
     }
 
     uploadMsg.textContent = "AI is extracting your profile...";

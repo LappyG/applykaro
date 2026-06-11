@@ -17,12 +17,12 @@
       padding: 12px 20px !important;
       border: none !important;
       border-radius: 50px !important;
-      background: linear-gradient(135deg, #6366f1, #a855f7) !important;
+      background: linear-gradient(135deg, #4f46e5, #10b981) !important;
       color: #fff !important;
       font-size: 14px !important;
       font-weight: 700 !important;
       cursor: pointer !important;
-      box-shadow: 0 4px 24px rgba(99,102,241,0.4) !important;
+      box-shadow: 0 4px 24px rgba(79,70,229,0.4) !important;
       font-family: system-ui, sans-serif !important;
       letter-spacing: 0 !important;
       text-transform: none !important;

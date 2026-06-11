@@ -3,7 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
   <title>ApplyKaro Autofill</title>
+  <script src="../lib/theme-init.js"></script>
   <link rel="stylesheet" href="popup.css">
 </head>
 <body>
@@ -16,6 +18,7 @@
       </div>
       <div class="ak-header-right">
         <span class="ak-completeness" id="completeness"></span>
+        <button class="ak-theme-toggle" id="theme-toggle" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">🌙</button>
         <span class="ak-badge">Autofill</span>
       </div>
     </div>
@@ -33,10 +36,10 @@
       </div>
 
       <div class="ak-upload-zone" id="drop-zone">
-        <input type="file" id="resume-file" accept=".pdf" hidden>
+        <input type="file" id="resume-file" accept=".pdf,.docx" hidden>
         <div class="ak-upload-icon">📄</div>
-        <div class="ak-upload-text">Drop your resume PDF here</div>
-        <div class="ak-upload-sub">or <span class="ak-upload-browse">browse files</span></div>
+        <div class="ak-upload-text">Drop your resume here</div>
+        <div class="ak-upload-sub">PDF or DOCX · or <span class="ak-upload-browse">browse files</span></div>
       </div>
 
       <div class="ak-upload-status" id="upload-status" style="display:none">
@@ -100,7 +103,7 @@
       <!-- Settings panel -->
       <div id="settings-panel" style="display:none">
         <div class="ak-step-header">
-          <div class="ak-step-num" style="background:linear-gradient(135deg,#6366f1,#a855f7);font-size:16px">⚙</div>
+          <div class="ak-step-num" style="font-size:16px">⚙</div>
           <div>
             <div class="ak-step-title">Settings</div>
             <div class="ak-step-desc">API key & preferences</div>
@@ -285,6 +288,7 @@
   </div>
 
   <script src="../lib/pdf.min.js"></script>
+  <script src="../lib/docx-text.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
