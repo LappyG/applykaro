@@ -60,6 +60,17 @@
     <div id="step-review" class="ak-step" style="display:none">
       <!-- Profile complete state -->
       <div id="profile-complete" class="ak-profile-done" style="display:none">
+        <div class="ak-profile-switch" id="profile-switch">
+          <select id="profile-select" title="Active profile"></select>
+          <button id="new-profile-btn" type="button" title="New profile">＋</button>
+          <button id="rename-profile-btn" type="button" title="Rename profile">✎</button>
+          <button id="delete-profile-btn" type="button" title="Delete profile">🗑</button>
+        </div>
+        <div class="ak-profile-name-edit" id="profile-name-edit" style="display:none">
+          <input type="text" id="profile-name-input" placeholder="Profile name (e.g. Frontend)" maxlength="40">
+          <button id="profile-name-save" type="button" title="Save">✓</button>
+          <button id="profile-name-cancel" type="button" title="Cancel">✕</button>
+        </div>
         <div class="ak-done-icon">✓</div>
         <div class="ak-done-title">Profile Complete</div>
         <div class="ak-done-sub" id="done-sub">All fields filled</div>

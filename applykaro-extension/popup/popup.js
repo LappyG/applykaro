@@ -420,7 +420,7 @@ document.addEventListener("change", () => {
 });
 
 // ── Save ──
-document.getElementById("save-btn").addEventListener("click", () => {
+document.getElementById("save-btn").addEventListener("click", async () => {
   const profile = getProfile();
 
   if (!profile.fullName || !profile.email) {
@@ -429,22 +429,32 @@ document.getElementById("save-btn").addEventListener("click", () => {
     return;
   }
 
-  chrome.storage.local.set({ akProfile: profile }, () => {
-    statusEl.textContent = "✓ Profile saved!";
-    statusEl.className = "ak-status success";
+  // Save into the active profile (create one on first ever save)
+  let active = getActiveProfile();
+  if (!active) {
+    active = { id: newProfileId(), name: profile.fullName || "Default", data: profile };
+    profilesState.profiles.push(active);
+    profilesState.activeId = active.id;
+  } else {
+    active.data = profile;
+  }
+  await persistProfiles();
+  renderProfileSwitcher();
 
-    setTimeout(() => {
-      // Show profile complete state
-      profileForm.style.display = "none";
-      profileComplete.style.display = "block";
+  statusEl.textContent = "✓ Profile saved!";
+  statusEl.className = "ak-status success";
 
-      const filled = TRACKED_FIELDS.filter((k) => profile[k] && profile[k].length > 0).length;
-      document.getElementById("done-sub").textContent = `${filled + 2} fields filled — ready to autofill`;
+  setTimeout(() => {
+    // Show profile complete state
+    profileForm.style.display = "none";
+    profileComplete.style.display = "block";
 
-      statusEl.textContent = "";
-      statusEl.className = "ak-status";
-    }, 600);
-  });
+    const filled = TRACKED_FIELDS.filter((k) => profile[k] && profile[k].length > 0).length;
+    document.getElementById("done-sub").textContent = `${filled + 2} fields filled — ready to autofill`;
+
+    statusEl.textContent = "";
+    statusEl.className = "ak-status";
+  }, 600);
 });
 
 // ── Edit profile from complete state ──
@@ -772,10 +782,175 @@ function generateUserId() {
 }
 
 // ══════════════════════════════════
+//  MULTIPLE PROFILES
+// ══════════════════════════════════
+
+let profilesState = { profiles: [], activeId: null };
+const profileSelect = document.getElementById("profile-select");
+
+function newProfileId() {
+  return "p_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+
+function getActiveProfile() {
+  return profilesState.profiles.find((p) => p.id === profilesState.activeId) || null;
+}
+
+// Persist profiles + mirror the active profile's data to akProfile (content scripts read that).
+async function persistProfiles() {
+  const active = getActiveProfile();
+  await chrome.storage.local.set({
+    akProfiles: profilesState.profiles,
+    akActiveProfileId: profilesState.activeId,
+    akProfile: active ? active.data : {},
+  });
+}
+
+function renderProfileSwitcher() {
+  if (!profileSelect) return;
+  profileSelect.innerHTML = "";
+  profilesState.profiles.forEach((p) => {
+    const opt = document.createElement("option");
+    opt.value = p.id;
+    opt.textContent = p.name;
+    if (p.id === profilesState.activeId) opt.selected = true;
+    profileSelect.appendChild(opt);
+  });
+}
+
+// Load active profile into form and refresh the complete-state summary.
+function refreshActiveView() {
+  const data = (getActiveProfile() && getActiveProfile().data) || {};
+  loadProfile(data);
+  const filled = TRACKED_FIELDS.filter((k) => data[k] && data[k].length > 0).length;
+  document.getElementById("done-sub").textContent = `${filled + 2} fields filled — ready to autofill`;
+  updateCompleteness();
+  updateTabIndicators();
+}
+
+const profileSwitchRow = document.getElementById("profile-switch");
+const nameEdit = document.getElementById("profile-name-edit");
+const nameInput = document.getElementById("profile-name-input");
+const deleteBtn = document.getElementById("delete-profile-btn");
+let nameEditMode = null; // "new" | "rename"
+let deleteArmed = false;
+let deleteTimer = null;
+
+function openNameEditor(mode, prefill) {
+  nameEditMode = mode;
+  nameInput.value = prefill || "";
+  profileSwitchRow.style.display = "none";
+  nameEdit.style.display = "flex";
+  nameInput.focus();
+  nameInput.select();
+}
+
+function closeNameEditor() {
+  nameEditMode = null;
+  nameEdit.style.display = "none";
+  profileSwitchRow.style.display = "flex";
+}
+
+function disarmDelete() {
+  deleteArmed = false;
+  deleteBtn.classList.remove("danger");
+  deleteBtn.textContent = "🗑";
+  if (deleteTimer) clearTimeout(deleteTimer);
+}
+
+async function commitName() {
+  const name = nameInput.value.trim();
+  if (!name) {
+    nameInput.focus();
+    return;
+  }
+  if (nameEditMode === "new") {
+    const id = newProfileId();
+    profilesState.profiles.push({ id, name, data: {} });
+    profilesState.activeId = id;
+    await persistProfiles();
+    renderProfileSwitcher();
+    closeNameEditor();
+    // Open an empty form to fill the new profile in
+    loadProfile({});
+    profileComplete.style.display = "none";
+    settingsPanel.style.display = "none";
+    applicationsPanel.style.display = "none";
+    profileForm.style.display = "block";
+    updateCompleteness();
+    updateTabIndicators();
+  } else if (nameEditMode === "rename") {
+    const active = getActiveProfile();
+    if (active) {
+      active.name = name;
+      await persistProfiles();
+      renderProfileSwitcher();
+    }
+    closeNameEditor();
+  }
+}
+
+if (profileSelect) {
+  profileSelect.addEventListener("change", async () => {
+    disarmDelete();
+    profilesState.activeId = profileSelect.value;
+    await persistProfiles();
+    refreshActiveView();
+  });
+}
+
+document.getElementById("new-profile-btn").addEventListener("click", () => {
+  disarmDelete();
+  openNameEditor("new", "");
+});
+
+document.getElementById("rename-profile-btn").addEventListener("click", () => {
+  disarmDelete();
+  const active = getActiveProfile();
+  openNameEditor("rename", active ? active.name : "");
+});
+
+document.getElementById("profile-name-save").addEventListener("click", commitName);
+document.getElementById("profile-name-cancel").addEventListener("click", closeNameEditor);
+nameInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); commitName(); }
+  if (e.key === "Escape") { e.preventDefault(); closeNameEditor(); }
+});
+
+// Two-step delete (first click arms, second within 3s deletes)
+deleteBtn.addEventListener("click", async () => {
+  if (profilesState.profiles.length <= 1) {
+    deleteBtn.textContent = "✕";
+    deleteBtn.title = "Can't delete your only profile";
+    setTimeout(() => { deleteBtn.textContent = "🗑"; deleteBtn.title = "Delete profile"; }, 1500);
+    return;
+  }
+  if (!deleteArmed) {
+    deleteArmed = true;
+    deleteBtn.classList.add("danger");
+    deleteBtn.textContent = "✓?";
+    deleteBtn.title = "Click again to confirm delete";
+    deleteTimer = setTimeout(disarmDelete, 3000);
+    return;
+  }
+  // Confirmed
+  disarmDelete();
+  const active = getActiveProfile();
+  if (!active) return;
+  profilesState.profiles = profilesState.profiles.filter((p) => p.id !== active.id);
+  profilesState.activeId = profilesState.profiles[0].id;
+  await persistProfiles();
+  renderProfileSwitcher();
+  refreshActiveView();
+});
+
+// ══════════════════════════════════
 //  INIT: Check for saved profile
 // ══════════════════════════════════
 
-chrome.storage.local.get(["akProfile", "akUserId", "akSettings", "akCredits"], (data) => {
+chrome.storage.local.get(
+  ["akProfile", "akProfiles", "akActiveProfileId", "akUserId", "akSettings", "akCredits"],
+  (data) => {
   // Ensure userId exists
   let userId = data.akUserId;
   if (!userId) {
@@ -791,15 +966,32 @@ chrome.storage.local.get(["akProfile", "akUserId", "akSettings", "akCredits"], (
     ownKeyField.style.display = data.akSettings.useOwnKey ? "block" : "none";
   }
 
-  if (data.akProfile && data.akProfile.fullName) {
+  // Build profiles state — migrate a legacy single akProfile if needed
+  let profiles = Array.isArray(data.akProfiles) ? data.akProfiles : [];
+  let activeId = data.akActiveProfileId || null;
+  const legacy = !Array.isArray(data.akProfiles);
+  if (profiles.length === 0 && data.akProfile && data.akProfile.fullName) {
+    activeId = newProfileId();
+    profiles = [{ id: activeId, name: "Default", data: data.akProfile }];
+  }
+  if (profiles.length > 0 && !profiles.find((p) => p.id === activeId)) {
+    activeId = profiles[0].id;
+  }
+  profilesState = { profiles, activeId };
+  renderProfileSwitcher();
+  if (legacy && profiles.length > 0) persistProfiles(); // save migration once
+
+  const activeData = getActiveProfile() ? getActiveProfile().data : null;
+
+  if (activeData && activeData.fullName) {
     // Has saved profile → show complete state
-    loadProfile(data.akProfile);
+    loadProfile(activeData);
     stepUpload.style.display = "none";
     stepReview.style.display = "block";
     profileForm.style.display = "none";
     profileComplete.style.display = "block";
 
-    const filled = TRACKED_FIELDS.filter((k) => data.akProfile[k] && data.akProfile[k].length > 0).length;
+    const filled = TRACKED_FIELDS.filter((k) => activeData[k] && activeData[k].length > 0).length;
     document.getElementById("done-sub").textContent = `${filled + 2} fields filled — ready to autofill`;
 
     updateCompleteness();

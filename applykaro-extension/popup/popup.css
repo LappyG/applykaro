@@ -67,6 +67,7 @@
 :root[data-theme="dark"] .ak-completeness.partial { color: #fbbf24; background: rgba(245, 158, 11, 0.16); }
 :root[data-theme="dark"] .ak-field select option { background: #141a24; color: var(--ak-text); }
 :root[data-theme="dark"] .ak-app-status.is-interview { color: #fbbf24; }
+:root[data-theme="dark"] .ak-profile-switch select option { background: #141a24; color: var(--ak-text); }
 
 * {
   margin: 0;
@@ -795,6 +796,95 @@ body::-webkit-scrollbar-thumb:hover { background: var(--ak-text-3); }
 }
 .ak-toggle input:checked + .ak-toggle-slider::before {
   transform: translateX(18px);
+}
+
+/* ── Profile switcher ── */
+.ak-profile-switch {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.ak-profile-switch select {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 9px;
+  border: 1px solid var(--ak-border);
+  background: var(--ak-bg);
+  color: var(--ak-text);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.ak-profile-switch select:focus { border-color: var(--ak-indigo); }
+.ak-profile-switch select option { background: var(--ak-bg); color: var(--ak-text); }
+.ak-profile-switch button {
+  width: 30px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  border: 1px solid var(--ak-border);
+  background: var(--ak-surface-2);
+  color: var(--ak-text-2);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ak-profile-switch button:hover {
+  background: var(--ak-surface);
+  color: var(--ak-text);
+  border-color: var(--ak-border-strong);
+}
+.ak-profile-switch button.danger {
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--ak-red);
+}
+
+.ak-profile-name-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.ak-profile-name-edit input {
+  flex: 1;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 9px;
+  border: 1px solid var(--ak-indigo);
+  background: var(--ak-bg);
+  color: var(--ak-text);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  outline: none;
+}
+.ak-profile-name-edit input::placeholder { color: var(--ak-text-3); font-weight: 400; }
+.ak-profile-name-edit button {
+  width: 30px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  border: 1px solid var(--ak-border);
+  background: var(--ak-surface-2);
+  color: var(--ak-text-2);
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+#profile-name-save {
+  border-color: var(--ak-indigo-bg-2);
+  background: var(--ak-indigo-bg);
+  color: var(--ak-indigo);
 }
 
 /* ── Applications tracker ── */
