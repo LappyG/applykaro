@@ -25,6 +25,7 @@
         "content/jd-scraper.js",
         "content/answer-gen.js",
         "content/tracker.js",
+        "content/matcher.js",
         "content/ui.js"
       ],
       "css": ["content/content.css"],

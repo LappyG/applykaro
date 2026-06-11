@@ -137,7 +137,8 @@
     `);
   }
 
-  function showResults(results) {
+  function showResults(results, meta) {
+    meta = meta || {};
     removeButton();
     const filledHtml = results.filled.map(f =>
       `<div style="padding:6px 10px;margin-bottom:3px;border-radius:6px;background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.1)">
@@ -153,6 +154,13 @@
     const failedHtml = results.failed.length
       ? `<div style="margin-top:6px;font-size:11px;color:#f87171">${results.failed.length} fields need manual attention</div>`
       : "";
+
+    let creditNote = "";
+    if (meta.localCount && !meta.usedAI) {
+      creditNote = `<div style="margin-bottom:12px;padding:8px;border-radius:8px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);font-size:11px;color:#34d399;text-align:center">⚡ ${meta.localCount} fields filled instantly — no credit used</div>`;
+    } else if (meta.localCount) {
+      creditNote = `<div style="margin-bottom:12px;padding:8px;border-radius:8px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.25);font-size:11px;color:#818cf8;text-align:center">⚡ ${meta.localCount} filled instantly, the rest by AI</div>`;
+    }
 
     showOverlay(`
       <div style="font-weight:700;font-size:14px;margin-bottom:12px;padding-right:24px">
@@ -172,6 +180,7 @@
           <div style="font-size:10px;color:rgba(255,255,255,0.4)">FAILED</div>
         </div>
       </div>
+      ${creditNote}
       ${filledHtml}${skippedHtml}${failedHtml}
       <div style="margin-top:12px;padding:8px;border-radius:8px;background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.12);font-size:11px;color:rgba(255,255,255,0.35);text-align:center">
         Review all fields before submitting. ApplyKaro never auto-submits.
@@ -218,32 +227,45 @@
     }
     window.__akLastExtracted = fields;
 
-    // 3. Call background service worker
-    let response;
-    try {
-      response = await chrome.runtime.sendMessage({ type: "AK_AUTOFILL", fields, profile: akProfile });
-    } catch (err) {
-      // Retry once — service worker may have gone idle
-      await new Promise(r => setTimeout(r, 800));
+    // 3. Local-first — fill obvious fields instantly (no AI call, no credit)
+    const localMapping = window.__akLocalMatch ? window.__akLocalMatch(fields, akProfile) : {};
+    const localCount = Object.keys(localMapping).length;
+
+    // Ask the AI only about fields we couldn't map locally and that are empty
+    const matched = new Set(Object.keys(localMapping));
+    const toAsk = fields.filter((f) => !matched.has(f.identifier) && !f.hasValue);
+
+    let aiMapping = {};
+    let usedAI = false;
+    if (toAsk.length > 0) {
+      usedAI = true;
+      let response;
       try {
-        response = await chrome.runtime.sendMessage({ type: "AK_AUTOFILL", fields, profile: akProfile });
-      } catch (err2) {
-        throw new Error("Cannot reach extension. Go to chrome://extensions and click Reload on ApplyKaro Autofill.");
+        response = await chrome.runtime.sendMessage({ type: "AK_AUTOFILL", fields: toAsk, profile: akProfile });
+      } catch (err) {
+        // Retry once — service worker may have gone idle
+        await new Promise(r => setTimeout(r, 800));
+        try {
+          response = await chrome.runtime.sendMessage({ type: "AK_AUTOFILL", fields: toAsk, profile: akProfile });
+        } catch (err2) {
+          throw new Error("Cannot reach extension. Go to chrome://extensions and click Reload on ApplyKaro Autofill.");
+        }
       }
+      if (!response) throw new Error("Empty response from service. Try again.");
+      if (response.error) throw new Error(response.error);
+      if (!response.mapping) throw new Error("AI returned no mapping. Try again.");
+      aiMapping = response.mapping;
     }
 
-    if (!response) throw new Error("Empty response from service. Try again.");
-    if (response.error) throw new Error(response.error);
-    if (!response.mapping) throw new Error("AI returned no mapping. Try again.");
-
-    // 4. Fill fields
+    // 4. Merge (local wins on conflicts) + fill
     if (!window.__akFillFields) {
       throw new Error("Filler not loaded. Please reload the page.");
     }
-    const results = window.__akFillFields(response.mapping);
+    const mapping = { ...aiMapping, ...localMapping };
+    const results = window.__akFillFields(mapping);
 
     // 5. Show results
-    showResults(results);
+    showResults(results, { localCount, usedAI });
 
     // 6. Log this application locally (fire-and-forget) if we filled anything
     try {
