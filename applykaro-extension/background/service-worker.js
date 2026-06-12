@@ -109,6 +109,12 @@ const ON_DEVICE_SYSTEM =
   "application question, grounded ONLY in the applicant's background below. Never invent facts. " +
   "Match length to the question. Output only the answer text — no preamble, no quotes.";
 
+// Declare expected I/O language so Chrome can attest output safety (avoids a console warning).
+const ON_DEVICE_LANG = {
+  expectedInputs: [{ type: "text", languages: ["en"] }],
+  expectedOutputs: [{ type: "text", languages: ["en"] }],
+};
+
 function buildOnDevicePrompt(m) {
   const role =
     m.jobTitle || m.company ? `Role: ${m.jobTitle || ""}${m.company ? ` at ${m.company}` : ""}\n` : "";
@@ -121,10 +127,11 @@ function buildOnDevicePrompt(m) {
 async function tryOnDeviceAnswer(message) {
   try {
     if (typeof LanguageModel === "undefined") return null;
-    const availability = await LanguageModel.availability();
+    const availability = await LanguageModel.availability(ON_DEVICE_LANG);
     if (availability !== "available") return null; // don't block on a model download
     const session = await LanguageModel.create({
       initialPrompts: [{ role: "system", content: ON_DEVICE_SYSTEM }],
+      ...ON_DEVICE_LANG,
     });
     const answer = (await session.prompt(buildOnDevicePrompt(message))).trim();
     if (session.destroy) session.destroy();

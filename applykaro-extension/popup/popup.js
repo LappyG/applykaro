@@ -884,7 +884,10 @@ async function refreshOnDeviceStatus() {
       el.className = "ak-od-status no";
       return;
     }
-    const availability = await LanguageModel.availability();
+    const availability = await LanguageModel.availability({
+      expectedInputs: [{ type: "text", languages: ["en"] }],
+      expectedOutputs: [{ type: "text", languages: ["en"] }],
+    });
     if (availability === "available") {
       el.textContent = "Available ✓";
       el.className = "ak-od-status ok";
