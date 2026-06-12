@@ -873,6 +873,35 @@ function generateUserId() {
 }
 
 // ══════════════════════════════════
+//  ON-DEVICE AI STATUS
+// ══════════════════════════════════
+async function refreshOnDeviceStatus() {
+  const el = document.getElementById("od-status");
+  if (!el) return;
+  try {
+    if (typeof LanguageModel === "undefined") {
+      el.textContent = "Cloud";
+      el.className = "ak-od-status no";
+      return;
+    }
+    const availability = await LanguageModel.availability();
+    if (availability === "available") {
+      el.textContent = "Available ✓";
+      el.className = "ak-od-status ok";
+    } else if (availability === "downloadable" || availability === "downloading") {
+      el.textContent = "Downloadable";
+      el.className = "ak-od-status no";
+    } else {
+      el.textContent = "Cloud";
+      el.className = "ak-od-status no";
+    }
+  } catch (e) {
+    el.textContent = "Cloud";
+    el.className = "ak-od-status no";
+  }
+}
+
+// ══════════════════════════════════
 //  MULTIPLE PROFILES
 // ══════════════════════════════════
 
@@ -1049,6 +1078,7 @@ chrome.storage.local.get(
     chrome.storage.local.set({ akUserId: userId });
   }
   document.getElementById("user-id-display").textContent = userId;
+  refreshOnDeviceStatus();
 
   // Load settings
   if (data.akSettings) {

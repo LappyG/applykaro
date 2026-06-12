@@ -144,7 +144,7 @@
         field.dispatchEvent(new Event("input", { bubbles: true }));
         field.dispatchEvent(new Event("change", { bubbles: true }));
       }
-      flash("✓ Done");
+      flash(res.engine === "on-device" ? "✓ on-device ✨" : "✓ Done");
     } catch (err) {
       console.error("[ApplyKaro] generate:", err);
       flash("⚠ " + (err.message || "Failed").slice(0, 40));

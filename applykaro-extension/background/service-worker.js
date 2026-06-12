@@ -102,7 +102,47 @@ async function handleAutofill(fields, profile) {
   }
 }
 
+// ── On-device AI (Chrome built-in Prompt API / Gemini Nano) ──
+// Free, private, offline. Returns null when unavailable so we fall back to cloud.
+const ON_DEVICE_SYSTEM =
+  "You are an expert job applicant. Write a concise, authentic, first-person answer to the " +
+  "application question, grounded ONLY in the applicant's background below. Never invent facts. " +
+  "Match length to the question. Output only the answer text — no preamble, no quotes.";
+
+function buildOnDevicePrompt(m) {
+  const role =
+    m.jobTitle || m.company ? `Role: ${m.jobTitle || ""}${m.company ? ` at ${m.company}` : ""}\n` : "";
+  const jd = m.jobDescription ? `Job description: ${String(m.jobDescription).slice(0, 1500)}\n` : "";
+  const profile = m.profile && m.profile.fullName ? `Profile: ${JSON.stringify(m.profile).slice(0, 800)}\n` : "";
+  const resume = m.resumeText ? `My background: ${String(m.resumeText).slice(0, 2500)}\n` : "";
+  return `Question: ${m.question}\n${role}${jd}${profile}${resume}\nWrite my answer.`;
+}
+
+async function tryOnDeviceAnswer(message) {
+  try {
+    if (typeof LanguageModel === "undefined") return null;
+    const availability = await LanguageModel.availability();
+    if (availability !== "available") return null; // don't block on a model download
+    const session = await LanguageModel.create({
+      initialPrompts: [{ role: "system", content: ON_DEVICE_SYSTEM }],
+    });
+    const answer = (await session.prompt(buildOnDevicePrompt(message))).trim();
+    if (session.destroy) session.destroy();
+    return answer || null;
+  } catch (err) {
+    console.warn("[ApplyKaro] on-device AI unavailable, using cloud:", err && err.message);
+    return null;
+  }
+}
+
 async function handleGenerateAnswer(message) {
+  // 1) Try the browser's built-in on-device AI first — free, private, no credit.
+  const onDeviceAnswer = await tryOnDeviceAnswer(message);
+  if (onDeviceAnswer) {
+    return { answer: onDeviceAnswer, engine: "on-device", credits: null };
+  }
+
+  // 2) Fall back to the cloud (Claude) — credits / own-key apply.
   const data = await chrome.storage.local.get(["akUserId", "akSettings"]);
   const userId = data.akUserId;
   const settings = data.akSettings || {};
@@ -148,7 +188,7 @@ async function handleGenerateAnswer(message) {
       chrome.storage.local.set({ akCredits: result.credits });
     }
 
-    return { answer: result.answer, credits: result.credits };
+    return { answer: result.answer, engine: "cloud", credits: result.credits };
   } catch (err) {
     if (err.message.includes("Failed to fetch") || err.message.includes("NetworkError")) {
       throw new Error("Cannot reach ApplyKaro servers. Check your internet connection.");

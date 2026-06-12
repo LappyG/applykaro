@@ -749,6 +749,17 @@ body::-webkit-scrollbar-thumb:hover { background: var(--ak-text-3); }
   margin-top: 4px;
 }
 
+.ak-od-status {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: var(--ak-surface-2);
+  color: var(--ak-text-2);
+}
+.ak-od-status.ok { background: var(--ak-emerald-bg); color: var(--ak-emerald); }
+.ak-od-status.no { background: var(--ak-surface-2); color: var(--ak-text-3); }
+
 .ak-setting-hint {
   font-size: 10px;
   color: var(--ak-emerald);
